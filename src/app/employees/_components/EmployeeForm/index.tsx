@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ToolLanguageFormField from "./ToolLanguageFormField";
 import BaseSelect from "@/components/common/Select";
+import { PositionResource } from "@/interfaces/api";
+import { useCreateEmployee } from "@/hooks/useCreateEmployee";
 
 const imageSchema = z.object({
   data: z.string().optional(),
@@ -67,7 +69,21 @@ const formSchema = z.object({
   positions: z.array(positionSchema),
 });
 
-export default function CreateEmployeeForm() {
+type EmployeeFormProps = {
+  positionResources: Record<string, PositionResource>;
+};
+
+export default function EmployeeForm(props: EmployeeFormProps) {
+  const { positionResources } = props;
+
+  const [positionSelected, setPositionSelected] = useState<number[]>([])
+
+  const { trigger } = useCreateEmployee({
+    onSuccess: (res: any) => {
+      console.log(`create employee`, res)
+    }
+  })
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -89,7 +105,7 @@ export default function CreateEmployeeForm() {
     },
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, watch } = form;
 
   const {
     fields: positionField,
@@ -102,29 +118,25 @@ export default function CreateEmployeeForm() {
 
   const onSubmit = (data: any) => {
     console.log("Form data:", data);
+
+    trigger({...data})
   };
 
+  const updatePositionSelected = () => {
+    const positionSelectedObj = form.getValues('positions');
+    const positionSelectedValue = positionSelectedObj.map(item => item.positionResourceId);
+    setPositionSelected(positionSelectedValue);
+  }
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await fetch(`api/positionResources`);
-  //       if (!response.ok) {
-  //         throw new Error("Network response was not ok");
-  //       }
-  //       const result = await response.json();
-
-  //       console.log(`result`, result);
-  //       //setData(result.message);
-  //     } catch (error) {
-  //       //setError(error.message);
-  //     } finally {
-  //       //setLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
+  const positions = useMemo(
+    () => {
+      return Object.keys(positionResources).map((key) => ({
+        label: positionResources[key].name,
+        value: key,
+        disabled: positionSelected.includes(parseInt(key))
+      }))},
+    [positionResources, positionSelected]
+  );
 
   return (
     <Form {...form}>
@@ -165,9 +177,10 @@ export default function CreateEmployeeForm() {
                         <div className="flex-1">
                           <BaseSelect
                             placeholder="Select position"
-                            options={[{ label: "ssssss", value: "5" }]}
+                            options={positions}
                             onChange={(value) => {
                               onChange(parseInt(value));
+                              updatePositionSelected();
                             }}
                           />
                           <FormMessage />
@@ -175,7 +188,10 @@ export default function CreateEmployeeForm() {
                         <Button
                           className="w-[180px] bg-neutral-600 hover:bg-neutral-500"
                           type="button"
-                          onClick={() => removePosition(index)}
+                          onClick={() => {
+                            removePosition(index);
+                            updatePositionSelected();
+                          }}
                         >
                           Delete Position
                         </Button>
@@ -185,7 +201,7 @@ export default function CreateEmployeeForm() {
                 )}
               />
 
-              <ToolLanguageFormField form={form} index={index} />
+              <ToolLanguageFormField positionResources={positionResources} form={form} index={index} />
             </div>
           ))}
         </div>

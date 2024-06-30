@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ToolLanguage } from "@/interfaces/api";
+import { SelectOptions } from "@/interfaces/common";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type ToolLanguageInputProps = {
+  toolLanguageData: SelectOptions[];
   value: ToolLanguage;
   onChange?: (value: ToolLanguage) => void;
   className?: string;
@@ -15,17 +17,34 @@ type ToolLanguageInputProps = {
 };
 
 export default function ToolLanguageInput(props: ToolLanguageInputProps) {
-  const { value, onChange, className, errorMessage } = props;
+  const { toolLanguageData, value, onChange, className, errorMessage } = props;
   const [formState, setFormState] = useState<ToolLanguage>(value);
+  const [selectedFrom, setSelectedFrom] = useState<number>(0);
+
+  const thisYear = new Date().getFullYear();
+
+  const listYearFrom = useMemo(() => {
+    return Array.from({ length: 30 }, (_, index) => thisYear - index).map(
+      (item) => ({ label: `${item}`, value: `${item}` })
+    );
+  }, [thisYear]);
+
+  const listYearTo = useMemo(() => {
+    return Array.from({ length: selectedFrom? (thisYear - selectedFrom + 1) : 30 }, (_, index) => thisYear - index).map(
+      (item) => ({ label: `${item}`, value: `${item}` })
+    );
+  }, [thisYear, selectedFrom]);
 
   // Handle input change
-  const handleInputChange = (name: string, value: string | number | {data: string}[]) => {
+  const handleInputChange = (
+    name: string,
+    value: string | number | { data: string }[]
+  ) => {
     const updatedValue = {
       ...formState,
       [name]: value,
     };
 
-    console.log(`updatedValue`, updatedValue, value);
     setFormState(updatedValue);
     onChange?.(updatedValue);
   };
@@ -37,7 +56,7 @@ export default function ToolLanguageInput(props: ToolLanguageInputProps) {
           <div className="w-full sm:w-1/2">
             <BaseSelect
               placeholder="Select Tool/Language"
-              options={[{ label: "aaaa", value: "5" }]}
+              options={toolLanguageData}
               onChange={(value) =>
                 handleInputChange("toolLanguageResourceId", parseInt(value))
               }
@@ -46,12 +65,15 @@ export default function ToolLanguageInput(props: ToolLanguageInputProps) {
           <div className="flex gap-x-4 mt-4 sm:mt-0 sm:w-1/2">
             <BaseSelect
               placeholder="From"
-              options={[{ label: "aaaa", value: "5" }]}
-              onChange={(value) => handleInputChange("from", parseInt(value))}
+              options={listYearFrom}
+              onChange={(value) => {
+                handleInputChange("from", parseInt(value));
+                setSelectedFrom(parseInt(value));
+              }}
             />
             <BaseSelect
               placeholder="To"
-              options={[{ label: "aaaa", value: "5" }]}
+              options={listYearTo}
               onChange={(value) => handleInputChange("to", parseInt(value))}
             />
           </div>
@@ -66,13 +88,12 @@ export default function ToolLanguageInput(props: ToolLanguageInputProps) {
         />
       </div>
       <div>
-        <ImageUpload onChange={(value) => {
-          console.log(`iamge`, value)
-          const imageData = value.map((item) => ({data: item}))
-
-          console.log(`imageData`, imageData)
-          handleInputChange("images", imageData)
-        }} />
+        <ImageUpload
+          onChange={(value) => {
+            const imageData = value.map((item) => ({ data: item }));
+            handleInputChange("images", imageData);
+          }}
+        />
       </div>
     </div>
   );
