@@ -22,6 +22,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useUpdateEmployee } from "@/hooks/useUpdateEmployee";
 import { useRouter } from "next/navigation";
 import { TrashIcon } from "@radix-ui/react-icons";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
+import { useDeleteEmployee } from "@/hooks/useDeleteEmployee";
 
 const imageSchema = z.object({
   data: z.string().optional(),
@@ -75,7 +77,7 @@ const formSchema = z.object({
 
 type EmployeeFormProps = {
   positionResources: Record<string, PositionResource>;
-  formData?: Employee
+  formData?: Employee;
 };
 
 export default function EmployeeForm(props: EmployeeFormProps) {
@@ -85,40 +87,59 @@ export default function EmployeeForm(props: EmployeeFormProps) {
 
   let positionSelectedDefault: number[] = [];
 
-  if(formData) {
-    positionSelectedDefault = formData.positions.map(item => item.positionResourceId)
+  if (formData) {
+    positionSelectedDefault = formData.positions.map(
+      (item) => item.positionResourceId
+    );
   }
 
-  const [positionSelected, setPositionSelected] = useState<number[]>(positionSelectedDefault)
+  const [positionSelected, setPositionSelected] = useState<number[]>(
+    positionSelectedDefault
+  );
+  const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
 
   const { toast } = useToast();
 
   const backListEmployees = () => {
-    window.location.href = ('/employees')
-  }
+    window.location.href = "/employees";
+  };
 
   const { trigger: createEmployee } = useCreateEmployee({
     onSuccess: (res: any) => {
-      if(res.data) {
+      if (res.data) {
         toast({
           title: "Create new employee successful.",
-        })
+        });
         backListEmployees();
       }
-    }
-  })
+    },
+  });
 
   const { trigger: updateEmployee } = useUpdateEmployee({
     onSuccess: (res: any) => {
-      if(res.data) {
+      if (res.data) {
         toast({
           title: "Update employee successful.",
-        })
+        });
         backListEmployees();
       }
+    },
+  });
+
+  const { trigger: deleteEmployee } = useDeleteEmployee({
+    onSuccess: (res: any) => {
+      if (res.data) {
+        backListEmployees();
+      }
+    },
+  });
+
+  const handleDeleteEmployee = () => {
+    setOpenConfirmDelete(false);
+    if (formData?.id) {
+      deleteEmployee({ id: formData.id.toString() });
     }
-  })
-  
+  };
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -153,33 +174,35 @@ export default function EmployeeForm(props: EmployeeFormProps) {
   });
 
   const onSubmit = (data: Employee) => {
-    if(formData?.id) {
-      updateEmployee({id: formData.id.toString() , body: data})
+    if (formData?.id) {
+      updateEmployee({ id: formData.id.toString(), body: data });
     } else {
-      createEmployee(data)
+      createEmployee(data);
     }
-   
   };
 
   const updatePositionSelected = () => {
-    const positionSelectedObj = form.getValues('positions');
-    const positionSelectedValue = positionSelectedObj.map(item => item.positionResourceId);
+    const positionSelectedObj = form.getValues("positions");
+    const positionSelectedValue = positionSelectedObj.map(
+      (item) => item.positionResourceId
+    );
     setPositionSelected(positionSelectedValue);
-  }
+  };
 
-  const positions = useMemo(
-    () => {
-      return Object.keys(positionResources).map((key) => ({
-        label: positionResources[key].name,
-        value: key,
-        disabled: positionSelected.includes(parseInt(key))
-      }))},
-    [positionResources, positionSelected]
-  );
+  const positions = useMemo(() => {
+    return Object.keys(positionResources).map((key) => ({
+      label: positionResources[key].name,
+      value: key,
+      disabled: positionSelected.includes(parseInt(key)),
+    }));
+  }, [positionResources, positionSelected]);
 
   return (
     <Form {...form}>
-      <form className="space-y-4 pb-20 md:pb-0" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        className="space-y-4 pb-20 md:pb-0"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <FormField
           control={control}
           name="name"
@@ -217,7 +240,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
                           <BaseSelect
                             placeholder="Select position"
                             options={positions}
-                            value={`${value || ''}`}
+                            value={`${value || ""}`}
                             onChange={(value) => {
                               onChange(parseInt(value));
                               updatePositionSelected();
@@ -233,7 +256,14 @@ export default function EmployeeForm(props: EmployeeFormProps) {
                             updatePositionSelected();
                           }}
                         >
-                         <TrashIcon className="md:hidden" height={20} width={20} /> <span className="hidden md:block">Delete Position</span>
+                          <TrashIcon
+                            className="md:hidden"
+                            height={20}
+                            width={20}
+                          />{" "}
+                          <span className="hidden md:block">
+                            Delete Position
+                          </span>
                         </Button>
                       </div>
                     </FormControl>
@@ -241,7 +271,11 @@ export default function EmployeeForm(props: EmployeeFormProps) {
                 )}
               />
 
-              <ToolLanguageFormField positionResources={positionResources} form={form} index={index} />
+              <ToolLanguageFormField
+                positionResources={positionResources}
+                form={form}
+                index={index}
+              />
             </div>
           ))}
         </div>
@@ -267,15 +301,44 @@ export default function EmployeeForm(props: EmployeeFormProps) {
             Add Position
           </Button>
         </div>
-        <div className="flex z-10 -ml-4 md:ml-0 p-4 md:p-0 w-full fixed md:relative bottom-0 justify-end bg-background">
-          <Button
-            className="min-w-[180px] w-full md:w-auto bg-green-600 hover:bg-green-500"
-            type="submit"
-          >
-            Save
-          </Button>
+        <div className="flex gap-x-4 z-10 -ml-4 md:ml-0 p-4 md:p-0 md:pt-4 w-full fixed md:relative bottom-0 justify-end bg-background">
+          <div className="flex-1">
+            <Button
+              onClick={() => {setOpenConfirmDelete(true)}}
+              variant="destructive"
+              className="md:min-w-[180px] md:ml-[136px] md:w-auto"
+              type="button"
+            >
+              Delete
+            </Button>
+          </div>
+          <div className="flex gap-x-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={backListEmployees}
+              className="md:min-w-[180px] md:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              className="md:min-w-[180px] md:w-auto bg-green-600 hover:bg-green-500"
+              type="submit"
+            >
+              Save
+            </Button>
+          </div>
         </div>
       </form>
+      <ConfirmDialog
+        open={openConfirmDelete}
+        onOk={() => handleDeleteEmployee()}
+        onCancel={() => setOpenConfirmDelete(false)}
+        title={"Are you sure to delete this employee?"}
+        description={
+          "This action cannot be undone. This employee will be permanently removed from your system."
+        }
+      />
     </Form>
   );
 }

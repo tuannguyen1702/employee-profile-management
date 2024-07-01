@@ -96,7 +96,6 @@ export default function EmployeeList() {
   }, [data, isValidating]);
 
   useEffect(() => {
-    console.log(`data?.data`, employees, data?.data);
     if (data?.data) {
       setEmployees([...employees, ...data.data]);
     }
