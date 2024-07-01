@@ -84,10 +84,15 @@ export default function Employees() {
   }, [data, isValidating]);
 
   useEffect(() => {
+    console.log(`data?.data`, employees, data?.data)
     if (data?.data) {
-      setEmployees((prev) => [...prev, ...data.data]);
+      setEmployees([...employees, ...data.data]);
     }
   }, [data]);
+
+  useEffect(() => {
+    return () => setEmployees([])
+  }, []);
 
   useEffect(() => {
     if (inView) {
@@ -142,7 +147,7 @@ export default function Employees() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-6 md:gap-8">
           {employees.map((employee, idx) => (
-            <Link  key={idx} href={`/employees/edit/${employee.id}`}>
+            <Link  key={idx + employee.name} href={`/employees/edit/${employee.id}`}>
               <EmployeeCard
                 data={employee}
                 actions={

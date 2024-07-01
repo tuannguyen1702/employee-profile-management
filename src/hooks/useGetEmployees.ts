@@ -8,6 +8,7 @@ export const useGetEmployees = (params: EmployeeQueryParams, options?: SWRConfig
       { key: 'getEmployees', params },
       async () => await getEmployees(params),
       {
+        revalidateIfStale: true,
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         ...options,

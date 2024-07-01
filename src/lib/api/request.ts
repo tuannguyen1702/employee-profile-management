@@ -23,8 +23,6 @@ const request = async (
   const queryString = queryParams ? buildQueryString(queryParams) : '';
   const fullUrl = `${environments.apiURL}${url}${queryString}`;
 
-  console.log(`body body`, body);
-
   const config: RequestInit = {
     method,
     headers: {

@@ -3,7 +3,7 @@ import {
   EmployeeQueryParams,
   PositionResource,
 } from "@/interfaces/api";
-import { del, get, post } from "./request";
+import { del, get, post, put } from "./request";
 
 const url = "/employees";
 
@@ -18,6 +18,13 @@ export async function deleteEmployee(id: string): Promise<{
   data: PositionResource[];
 }> {
   const res = await del(`${url}/${id}`);
+  return { data: res };
+}
+
+export async function updateEmployee(id: string, body: Employee): Promise<{
+  data: PositionResource[];
+}> {
+  const res = await put(`${url}/${id}`, body);
   return { data: res };
 }
 

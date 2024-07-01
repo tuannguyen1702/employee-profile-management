@@ -18,6 +18,9 @@ import ToolLanguageFormField from "./ToolLanguageFormField";
 import BaseSelect from "@/components/common/Select";
 import { Employee, PositionResource } from "@/interfaces/api";
 import { useCreateEmployee } from "@/hooks/useCreateEmployee";
+import { useToast } from "@/components/ui/use-toast";
+import { useUpdateEmployee } from "@/hooks/useUpdateEmployee";
+import { useRouter } from "next/navigation";
 
 const imageSchema = z.object({
   data: z.string().optional(),
@@ -77,6 +80,8 @@ type EmployeeFormProps = {
 export default function EmployeeForm(props: EmployeeFormProps) {
   const { positionResources, formData } = props;
 
+  const router = useRouter();
+
   let positionSelectedDefault: number[] = [];
 
   if(formData) {
@@ -85,11 +90,34 @@ export default function EmployeeForm(props: EmployeeFormProps) {
 
   const [positionSelected, setPositionSelected] = useState<number[]>(positionSelectedDefault)
 
-  const { trigger } = useCreateEmployee({
+  const { toast } = useToast();
+
+  const backListEmployees = () => {
+    router.push('/employees')
+  }
+
+  const { trigger: createEmployee } = useCreateEmployee({
     onSuccess: (res: any) => {
-      console.log(`create employee`, res)
+      if(res.data) {
+        toast({
+          title: "Create new employee successful.",
+        })
+        backListEmployees();
+      }
     }
   })
+
+  const { trigger: updateEmployee } = useUpdateEmployee({
+    onSuccess: (res: any) => {
+      if(res.data) {
+        toast({
+          title: "Update employee successful.",
+        })
+        backListEmployees();
+      }
+    }
+  })
+  
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -124,7 +152,12 @@ export default function EmployeeForm(props: EmployeeFormProps) {
   });
 
   const onSubmit = (data: Employee) => {
-    trigger(data)
+    if(formData?.id) {
+      updateEmployee({id: formData.id.toString() , body: data})
+    } else {
+      createEmployee(data)
+    }
+   
   };
 
   const updatePositionSelected = () => {
