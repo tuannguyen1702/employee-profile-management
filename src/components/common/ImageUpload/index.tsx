@@ -3,7 +3,8 @@ import { theme } from "./theme";
 import { cn } from "@/lib/utils";
 import { BaseSize } from "@/interfaces/common";
 import { ChangeEvent, useState } from "react";
-import { PlusIcon } from "@radix-ui/react-icons";
+import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
+import { Button } from "@/components/ui/button";
 
 export interface ImageUploadProps {
   value?: string[];
@@ -44,6 +45,15 @@ const ImageUpload = (props: ImageUploadProps) => {
     }
   };
 
+  const deleteImage = (index: number) => {
+    if (imagePreview) {
+      const updateList = [...imagePreview];
+      updateList.splice(index, 1);
+      setImagePreview(updateList);
+      onChange?.(updateList);
+    }
+  };
+
   return (
     <div className="flex gap-4">
       <div className={cn("border-dotted", allClass)}>
@@ -64,7 +74,10 @@ const ImageUpload = (props: ImageUploadProps) => {
           imagePreview.length > 0 &&
           imagePreview.map((item, idx) =>
             item ? (
-              <div key={idx} className={allClass}>
+              <div key={idx} className={cn(allClass, 'group/item  relative')}>
+                <Button onClick={() => deleteImage(idx)} variant="ghost" className="hidden group-hover/item:flex w-8 h-8 p-0 absolute top-1 right-1 z-10 rounded-full">
+                  <TrashIcon height={20} width={20}  />
+                </Button>
                 <img
                   src={item}
                   alt="Uploaded preview"
