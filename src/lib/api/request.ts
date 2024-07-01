@@ -33,7 +33,6 @@ const request = async (
   };
 
   try {
-    console.log(`fullUrl`, fullUrl)
     const response = await fetch(fullUrl, config);
     if (!response.ok) {
       throw new Error(`Error: ${response.status} ${response.statusText}`);
