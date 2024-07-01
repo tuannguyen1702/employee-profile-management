@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { PositionResource } from "@/interfaces/api";
 import { useMemo } from "react";
 import { Item } from "@radix-ui/react-select";
+import { TrashIcon } from "@radix-ui/react-icons";
 
 type ToolLanguageFormFieldProps = {
   positionResources: Record<string, PositionResource>;
@@ -65,11 +66,12 @@ const ToolLanguageFormField = (props: ToolLanguageFormFieldProps) => {
                       }}
                     />
                     <Button
-                      className="w-[180px] bg-neutral-600 hover:bg-neutral-500"
+                      className="w-[40px] px-1 md:w-[180px] bg-neutral-600 hover:bg-neutral-500"
                       type="button"
                       onClick={() => removeToolLanguage(idx)}
                     >
-                      Delete Tool/Language
+                      
+                      <TrashIcon className="md:hidden" height={20} width={20} /><span className="hidden md:block">Delete Tool/Language</span>
                     </Button>
                   </div>
                 </FormControl>

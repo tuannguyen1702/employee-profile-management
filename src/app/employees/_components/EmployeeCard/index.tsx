@@ -38,7 +38,7 @@ export function EmployeeCard(props: EmployeeCardProps) {
   return (
     <div className="group flex flex-col space-y-2">
       <Carousel setApi={setApi}>
-        <div className="border overflow-hidden rounded-lg bg-slate-100">
+        <div className="border aspect-video overflow-hidden rounded-lg bg-slate-100">
           <CarouselContent>
             {displayToolLanguage.images?.map((item, idx) => {
               return item.data ? (

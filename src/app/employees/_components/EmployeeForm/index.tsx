@@ -21,6 +21,7 @@ import { useCreateEmployee } from "@/hooks/useCreateEmployee";
 import { useToast } from "@/components/ui/use-toast";
 import { useUpdateEmployee } from "@/hooks/useUpdateEmployee";
 import { useRouter } from "next/navigation";
+import { TrashIcon } from "@radix-ui/react-icons";
 
 const imageSchema = z.object({
   data: z.string().optional(),
@@ -187,7 +188,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
               <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
                 Name
               </FormLabel>
-              <FormControl className="flex-1  md:pr-[196px]">
+              <FormControl className="flex-1 md:pr-[196px]">
                 <div>
                   <Input placeholder="Input name" {...field} />
                   <FormMessage />
@@ -225,14 +226,14 @@ export default function EmployeeForm(props: EmployeeFormProps) {
                           <FormMessage />
                         </div>
                         <Button
-                          className="w-[180px] bg-neutral-600 hover:bg-neutral-500"
+                          className="w-[40px] px-1 md:w-[180px] bg-neutral-600 hover:bg-neutral-500"
                           type="button"
                           onClick={() => {
                             removePosition(index);
                             updatePositionSelected();
                           }}
                         >
-                          Delete Position
+                         <TrashIcon className="md:hidden" height={20} width={20} /> <span className="hidden md:block">Delete Position</span>
                         </Button>
                       </div>
                     </FormControl>
