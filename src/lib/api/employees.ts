@@ -15,14 +15,14 @@ export async function createEmployee(body: Employee): Promise<{
 }
 
 export async function deleteEmployee(id: string): Promise<{
-  data: PositionResource[];
+  data: Employee;
 }> {
   const res = await del(`${url}/${id}`);
   return { data: res };
 }
 
 export async function updateEmployee(id: string, body: Employee): Promise<{
-  data: PositionResource[];
+  data: Employee;
 }> {
   const res = await put(`${url}/${id}`, body);
   return { data: res };

@@ -75,7 +75,7 @@ const ImageUpload = (props: ImageUploadProps) => {
           imagePreview.map((item, idx) =>
             item ? (
               <div key={idx} className={cn(allClass, 'group/item  relative')}>
-                <Button onClick={() => deleteImage(idx)} variant="ghost" className="hidden group-hover/item:flex w-8 h-8 p-0 absolute top-1 right-1 z-10 rounded-full">
+                <Button type="button" onClick={() => deleteImage(idx)} variant="ghost" className="hidden group-hover/item:flex w-8 h-8 p-0 absolute top-1 right-1 z-10 rounded-full">
                   <TrashIcon height={20} width={20}  />
                 </Button>
                 <img

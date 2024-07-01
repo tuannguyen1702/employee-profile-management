@@ -94,7 +94,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
   const { toast } = useToast();
 
   const backListEmployees = () => {
-    router.push('/employees')
+    window.location.href = ('/employees')
   }
 
   const { trigger: createEmployee } = useCreateEmployee({
@@ -179,7 +179,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
 
   return (
     <Form {...form}>
-      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+      <form className="space-y-4 pb-20 md:pb-0" onSubmit={handleSubmit(onSubmit)}>
         <FormField
           control={control}
           name="name"
@@ -267,9 +267,9 @@ export default function EmployeeForm(props: EmployeeFormProps) {
             Add Position
           </Button>
         </div>
-        <div className="flex justify-end">
+        <div className="flex z-10 -ml-4 md:ml-0 p-4 md:p-0 w-full fixed md:relative bottom-0 justify-end bg-background">
           <Button
-            className="min-w-[180px] bg-green-600 hover:bg-green-500"
+            className="min-w-[180px] w-full md:w-auto bg-green-600 hover:bg-green-500"
             type="submit"
           >
             Save

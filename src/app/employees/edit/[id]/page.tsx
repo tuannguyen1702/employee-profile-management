@@ -1,3 +1,5 @@
+'use client'
+
 import { getPositionResources } from "@/lib/api/positionResources";
 import { PositionResource } from "@/interfaces/api";
 import EmployeeForm from "../../_components/EmployeeForm";
@@ -17,6 +19,6 @@ export default async function CreateEmployee({
   data?.map((item) => {
     positionResources[item.positionResourceId] = item;
   });
-  
+
   return <EmployeeForm formData={employee} positionResources={positionResources} />;
 }

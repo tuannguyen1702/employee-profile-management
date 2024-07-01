@@ -2,8 +2,8 @@
 
 import { ITEM_PER_PAGE } from "@/const";
 import { useGetEmployees } from "@/hooks/useGetEmployees";
-import { Employee } from "@/interfaces/api";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Employee, PositionResource } from "@/interfaces/api";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import Title from "@/components/common/Typography/Title";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import Link from "next/link";
 import { EmployeeCard } from "../EmployeeCard";
+import { useGetPositionResources } from "@/hooks/useGetPositionResources";
 
 export default function EmployeeList() {
   const router = useRouter();
@@ -36,6 +37,17 @@ export default function EmployeeList() {
     _limit: `${ITEM_PER_PAGE}`,
     _page: `${page}`,
   });
+
+  const { data: positionResourcesRes } = useGetPositionResources();
+
+  const positionResources = useMemo(() => {
+    const positionResourcesObj: Record<number, PositionResource> = {};
+    positionResourcesRes?.data?.map((item) => {
+      positionResourcesObj[item.positionResourceId] = item;
+    })
+
+    return positionResourcesObj;
+  }, [positionResourcesRes]);
 
   const { trigger: deleteEmployee } = useDeleteEmployee({
     onSuccess: (res: any) => {
@@ -89,10 +101,6 @@ export default function EmployeeList() {
       setEmployees([...employees, ...data.data]);
     }
   }, [data]);
-
-  useEffect(() => {
-    return () => setEmployees([]);
-  }, []);
 
   useEffect(() => {
     if (inView) {
@@ -154,6 +162,7 @@ export default function EmployeeList() {
               >
                 <EmployeeCard
                   data={employee}
+                  positionResources={positionResources}
                   actions={
                     <Button
                       className="min-w-[100px] hidden group-hover:block"
