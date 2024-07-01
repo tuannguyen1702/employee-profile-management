@@ -58,13 +58,13 @@ const ImageUpload = (props: ImageUploadProps) => {
         />
       </div>
       {imagePreview && imagePreview.length > 0 && (
-        imagePreview.map((item, idx) => <div key={idx} className={allClass}>
+        imagePreview.map((item, idx) => item ? <div key={idx} className={allClass}>
         <img
           src={item}
           alt="Uploaded preview"
           className="object-contain"
         />
-      </div>)
+      </div> :'')
       )}
     </div>
   );

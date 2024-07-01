@@ -5,3 +5,8 @@ export type SelectOptions = {
   value: string;
   disabled?: boolean;
 };
+
+export type BaseQueryParams = {
+  _page: string;
+  _limit: string;
+}

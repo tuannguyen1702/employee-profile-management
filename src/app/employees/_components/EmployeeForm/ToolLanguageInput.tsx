@@ -1,7 +1,5 @@
 import ImageUpload from "@/components/common/ImageUpload";
 import BaseSelect from "@/components/common/Select";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ToolLanguage } from "@/interfaces/api";
 import { SelectOptions } from "@/interfaces/common";
@@ -57,6 +55,7 @@ export default function ToolLanguageInput(props: ToolLanguageInputProps) {
             <BaseSelect
               placeholder="Select Tool/Language"
               options={toolLanguageData}
+              value={`${value.toolLanguageResourceId || ''}`}
               onChange={(value) =>
                 handleInputChange("toolLanguageResourceId", parseInt(value))
               }
@@ -66,6 +65,7 @@ export default function ToolLanguageInput(props: ToolLanguageInputProps) {
             <BaseSelect
               placeholder="From"
               options={listYearFrom}
+              value={`${value.from || ''}`}
               onChange={(value) => {
                 handleInputChange("from", parseInt(value));
                 setSelectedFrom(parseInt(value));
@@ -74,6 +74,7 @@ export default function ToolLanguageInput(props: ToolLanguageInputProps) {
             <BaseSelect
               placeholder="To"
               options={listYearTo}
+              value={`${value.to || ''}`}
               onChange={(value) => handleInputChange("to", parseInt(value))}
             />
           </div>
@@ -84,11 +85,13 @@ export default function ToolLanguageInput(props: ToolLanguageInputProps) {
       <div>
         <Textarea
           placeholder="Description"
+          value={value.description}
           onChange={(e) => handleInputChange("description", e.target.value)}
         />
       </div>
       <div>
         <ImageUpload
+          value={value.images?.map(item => item.data)}
           onChange={(value) => {
             const imageData = value.map((item) => ({ data: item }));
             handleInputChange("images", imageData);

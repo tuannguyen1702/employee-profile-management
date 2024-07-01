@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ToolLanguageFormField from "./ToolLanguageFormField";
 import BaseSelect from "@/components/common/Select";
-import { PositionResource } from "@/interfaces/api";
+import { Employee, PositionResource } from "@/interfaces/api";
 import { useCreateEmployee } from "@/hooks/useCreateEmployee";
 
 const imageSchema = z.object({
@@ -71,12 +71,19 @@ const formSchema = z.object({
 
 type EmployeeFormProps = {
   positionResources: Record<string, PositionResource>;
+  formData?: Employee
 };
 
 export default function EmployeeForm(props: EmployeeFormProps) {
-  const { positionResources } = props;
+  const { positionResources, formData } = props;
 
-  const [positionSelected, setPositionSelected] = useState<number[]>([])
+  let positionSelectedDefault: number[] = [];
+
+  if(formData) {
+    positionSelectedDefault = formData.positions.map(item => item.positionResourceId)
+  }
+
+  const [positionSelected, setPositionSelected] = useState<number[]>(positionSelectedDefault)
 
   const { trigger } = useCreateEmployee({
     onSuccess: (res: any) => {
@@ -86,7 +93,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: formData ?? {
       name: "",
       positions: [
         {
@@ -105,7 +112,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
     },
   });
 
-  const { control, handleSubmit, watch } = form;
+  const { control, handleSubmit } = form;
 
   const {
     fields: positionField,
@@ -116,10 +123,8 @@ export default function EmployeeForm(props: EmployeeFormProps) {
     name: "positions",
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Form data:", data);
-
-    trigger({...data})
+  const onSubmit = (data: Employee) => {
+    trigger(data)
   };
 
   const updatePositionSelected = () => {
@@ -167,7 +172,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
               <FormField
                 control={control}
                 name={`positions.${index}.positionResourceId`}
-                render={({ field: { onChange } }) => (
+                render={({ field: { value, onChange } }) => (
                   <FormItem className="md:flex items-start flex-1 gap-x-4">
                     <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
                       Position
@@ -178,6 +183,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
                           <BaseSelect
                             placeholder="Select position"
                             options={positions}
+                            value={`${value || ''}`}
                             onChange={(value) => {
                               onChange(parseInt(value));
                               updatePositionSelected();

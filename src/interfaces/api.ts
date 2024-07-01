@@ -1,3 +1,5 @@
+import { BaseQueryParams } from "./common";
+
 export type Image = {
   data: string;
   displayOrder?: number;
@@ -21,6 +23,10 @@ export type Employee = {
   id?: number;
   name: string;
   positions: Position[];
+};
+
+export type EmployeeQueryParams = BaseQueryParams & {
+  name?: string;
 };
 
 export type ToolLanguageResource = {
