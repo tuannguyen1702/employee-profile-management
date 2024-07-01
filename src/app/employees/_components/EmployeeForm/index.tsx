@@ -302,16 +302,20 @@ export default function EmployeeForm(props: EmployeeFormProps) {
           </Button>
         </div>
         <div className="flex gap-x-4 z-10 -ml-4 md:ml-0 p-4 md:p-0 md:pt-4 w-full fixed md:relative bottom-0 justify-end bg-background">
-          <div className="flex-1">
-            <Button
-              onClick={() => {setOpenConfirmDelete(true)}}
-              variant="destructive"
-              className="md:min-w-[180px] md:ml-[136px] md:w-auto"
-              type="button"
-            >
-              Delete
-            </Button>
-          </div>
+          {formData?.id && (
+            <div className="flex-1">
+              <Button
+                onClick={() => {
+                  setOpenConfirmDelete(true);
+                }}
+                variant="destructive"
+                className="md:min-w-[180px] md:ml-[136px] md:w-auto"
+                type="button"
+              >
+                Delete
+              </Button>
+            </div>
+          )}
           <div className="flex gap-x-2">
             <Button
               type="button"
