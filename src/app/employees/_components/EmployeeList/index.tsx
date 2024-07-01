@@ -14,7 +14,7 @@ import ConfirmDialog from "@/components/common/ConfirmDialog";
 import Link from "next/link";
 import { EmployeeCard } from "../EmployeeCard";
 
-export default function Employees() {
+export default function EmployeeList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const name = searchParams.get("name");
@@ -158,9 +158,10 @@ export default function Employees() {
                     <Button
                       className="min-w-[100px] hidden group-hover:block"
                       variant="destructive"
-                      onClick={() => {
+                      onClick={(e) => {
                         setDeletedIndex(idx);
                         setOpenConfirmDelete(true);
+                        e.preventDefault();
                       }}
                     >
                       Delete
