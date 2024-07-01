@@ -12,10 +12,11 @@ import { useEffect, useState } from "react";
 
 type EmployeeCardProps = {
   data: Employee;
+  actions?: React.ReactNode
 };
 
 export function EmployeeCard(props: EmployeeCardProps) {
-  const { data } = props;
+  const { data, actions } = props;
   const displayToolLanguage = data.positions?.[0].toolLanguages?.[0] ?? {};
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
@@ -37,7 +38,7 @@ export function EmployeeCard(props: EmployeeCardProps) {
   return (
     <div className="group flex flex-col space-y-2">
       <Carousel setApi={setApi}>
-        <div className="border overflow-hidden rounded-lg bg-slate-50">
+        <div className="border overflow-hidden rounded-lg bg-slate-100">
           <CarouselContent>
             {displayToolLanguage.images?.map((item, idx) => {
               return item.data ? (
@@ -73,12 +74,7 @@ export function EmployeeCard(props: EmployeeCardProps) {
           <div className="line-clamp-2">{displayToolLanguage.description}</div>
         </div>
         <div className="flex justify-end h-10">
-          <Button
-            className="min-w-[100px] hidden group-hover:block"
-            variant="destructive"
-          >
-            Delete
-          </Button>
+          {actions}
         </div>
       </div>
     </div>
