@@ -211,7 +211,7 @@ export default function EmployeeForm(props: EmployeeFormProps) {
               <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
                 Name
               </FormLabel>
-              <FormControl className="flex-1 md:pr-[196px]">
+              <FormControl>
                 <div>
                   <Input placeholder="Input name" {...field} />
                   <FormMessage />

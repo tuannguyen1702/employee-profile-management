@@ -50,8 +50,8 @@ const BaseSelect = React.forwardRef<
     <Select
       name={name}
       required={required}
-      value={value}
-      onValueChange={onChange}
+      onValueChange={onChange} 
+      defaultValue={value}
       disabled={disabled}
       {...remainingProps}
     >

@@ -26,7 +26,7 @@ export type Employee = {
 };
 
 export type EmployeeQueryParams = BaseQueryParams & {
-  name?: string;
+  name_like?: string;
 };
 
 export type ToolLanguageResource = {
@@ -39,4 +39,16 @@ export type PositionResource = {
   positionResourceId: number;
   name: string;
   toolLanguageResources: ToolLanguageResource[];
+};
+
+export type User = {
+  id?: number;
+  name: string;
+  accountNumber: string;
+  level: string;
+  userUpline: string;
+};
+
+export type UserQueryParams = BaseQueryParams & {
+  name_like?: string;
 };
