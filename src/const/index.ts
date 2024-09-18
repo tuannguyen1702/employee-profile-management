@@ -1,22 +1,28 @@
-export const ITEM_PER_PAGE = 6;
+export const ITEM_PER_PAGE = 9999;
 
-export const levels = {
+export const levels: Record<string, {directCommission: number; inDirectCommission: number}> = {
+  Master: {
+    directCommission: 63,
+    inDirectCommission: 33,
+  },
   MIB: {
-    bonus: 30,
+    directCommission: 30,
+    inDirectCommission: 6,
   },
   IB1: {
-    bonus: 24,
+    directCommission: 24,
+    inDirectCommission: 4,
   },
   IB2: {
-    bonus: 20,
+    directCommission: 20,
+    inDirectCommission: 4,
   },
   IB3: {
-    bonus: 16,
+    directCommission: 16,
+    inDirectCommission: 4,
   },
   IB4: {
-    bonus: 12,
-  },
-  Client: {
-    bonus: 0,
-  },
+    directCommission: 12,
+    inDirectCommission: 4,
+  }
 };

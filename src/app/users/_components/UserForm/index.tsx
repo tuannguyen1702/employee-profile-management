@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,23 +32,36 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+import { cn } from "@/lib/utils";
 
 // Define the schema for the form
 const formSchema = z.object({
   name: z.string().optional(),
-  accountNumber: z.string().min(8),
+  userId: z.string().min(6),
   level: z.string().optional(),
-  userUpline: z.string().optional(),
+  parentId: z.string().optional(),
 });
 
 type UserFormProps = {
   formData?: User;
+  userData: User[] | undefined;
 };
 
 export default function UserForm(props: UserFormProps) {
-  const { formData } = props;
+  const { formData, userData } = props;
+
+  const [open, setOpen] = React.useState(false)
+  const [value, setValue] = React.useState("")
 
   const router = useRouter();
+
+
+  const userList = useMemo(() => {
+    return userData?.map((user) => ({label: user.name, value: user.userId}) )
+  }, [userData])
 
   const listLevel = Object.keys(levels).map((key) => ({
     value: key,
@@ -104,9 +117,9 @@ export default function UserForm(props: UserFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: formData ?? {
       name: "",
-      accountNumber: "",
-      userUpline: "",
-      level: "Client"
+      userId: "",
+      parentId: "",
+      level: "Client",
     },
   });
 
@@ -117,7 +130,7 @@ export default function UserForm(props: UserFormProps) {
     if (formData?.id) {
       // updateEmployee({ id: formData.id.toString(), body: data });
     } else {
-      // createUser(data);
+      createUser(data);
     }
   };
 
@@ -141,17 +154,17 @@ export default function UserForm(props: UserFormProps) {
           >
             <FormField
               control={control}
-              name="accountNumber"
+              name="userId"
               render={({ field }) => (
                 <FormItem className="md:flex items-start flex-1 gap-x-4">
                   <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
-                    Account Number
+                    User ID
                   </FormLabel>
                   <FormControl className="flex-1">
                     <div>
                       <Input
                         className="w-full"
-                        placeholder="Input Account Number"
+                        placeholder="Input User ID"
                         {...field}
                       />
                       <FormMessage />
@@ -180,15 +193,69 @@ export default function UserForm(props: UserFormProps) {
 
             <FormField
               control={control}
-              name="userUpline"
+              name="parentId"
               render={({ field }) => (
                 <FormItem className="md:flex items-start flex-1 gap-x-4">
                   <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
-                    User Upline
+                    Upline User
                   </FormLabel>
                   <FormControl className="flex-1">
                     <div>
-                      <Input placeholder="Input Name" {...field} />
+                      {/* <Input placeholder="Select Upline User" {...field} /> */}
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-full justify-between"
+                          >
+                            {value
+                              ? userList?.find(
+                                  (user) => user.value === value
+                                )?.label
+                              : "Select User"}
+                            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0 w-[355px]">
+                          <Command>
+                            <CommandInput
+                              placeholder="Search User"
+                              className="h-9"
+                            />
+                            <CommandList>
+                              <CommandEmpty>No user found.</CommandEmpty>
+                              <CommandGroup>
+                                {userList?.map((user) => (
+                                  <CommandItem
+                                    key={user.value}
+                                    value={user.value}
+                                    onSelect={(currentValue) => {
+                                      setValue(
+                                        currentValue === value
+                                          ? ""
+                                          : currentValue
+                                      );
+                                      setOpen(false);
+                                    }}
+                                  >
+                                    {user.label}
+                                    <CheckIcon
+                                      className={cn(
+                                        "ml-auto h-4 w-4",
+                                        value === user.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </div>
                   </FormControl>

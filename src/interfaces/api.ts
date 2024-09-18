@@ -44,11 +44,17 @@ export type PositionResource = {
 export type User = {
   id?: number;
   name: string;
-  accountNumber: string;
+  userId: string;
   level: string;
-  userUpline: string;
+  parentId: string | null;
 };
 
 export type UserQueryParams = BaseQueryParams & {
   name_like?: string;
+};
+
+export type UserRelated = {
+  id?: number;
+  userId: string;
+  parentId: string;
 };

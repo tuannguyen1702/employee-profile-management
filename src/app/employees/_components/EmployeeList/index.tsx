@@ -34,7 +34,7 @@ export default function EmployeeList() {
 
   const { data, isValidating } = useGetEmployees({
     ...query,
-    _limit: `${ITEM_PER_PAGE}`,
+    _limit: '9999',
     _page: `${page}`,
   });
 
