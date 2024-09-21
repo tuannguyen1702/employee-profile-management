@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import EmployeeList from "./_components/EmployeeList";
+import UserList from "./_components/UserList";
 
 export default function Employees() {
   return (
     <Suspense>
-      <EmployeeList />
+      <UserList />
     </Suspense>
   );
 }

@@ -47,6 +47,7 @@ export type User = {
   userId: string;
   level: string;
   parentId: string | null;
+  nameForSearch?: string;
 };
 
 export type UserQueryParams = BaseQueryParams & {

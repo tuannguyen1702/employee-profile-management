@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,62 +25,49 @@ import { useDeleteEmployee } from "@/hooks/useDeleteEmployee";
 import { levels } from "@/const";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import { cn } from "@/lib/utils";
+import { TreeNode } from "@/lib/utils";
 
 // Define the schema for the form
 const formSchema = z.object({
-  name: z.string().optional(),
-  userId: z.string().min(6),
-  level: z.string().optional(),
-  parentId: z.string().optional(),
+  name: z.string().min(1, { message: "Name is required." }),
+  userId: z.string().min(6, { message: "User ID is wrong format." }),
+  level: z.string(),
+  parentId: z.string(),
 });
 
 type UserFormProps = {
-  formData?: User;
-  userData: User[] | undefined;
+  open?: boolean;
+  formData?: TreeNode;
+  parentData?: TreeNode;
+  onClose?: () => void;
 };
 
 export default function UserForm(props: UserFormProps) {
-  const { formData, userData } = props;
+  const { formData, parentData, open = false, onClose } = props;
 
-  const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
+  const levelArr = Object.keys(levels);
 
-  const router = useRouter();
+  const level = useMemo(() => {
+    const idx = levelArr.findIndex((item) => item === parentData?.level);
 
-
-  const userList = useMemo(() => {
-    return userData?.map((user) => ({label: user.name, value: user.userId}) )
-  }, [userData])
-
-  const listLevel = Object.keys(levels).map((key) => ({
-    value: key,
-    label: key,
-  }));
-
-  const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
+    return levelArr[idx + 1];
+  }, [parentData, levelArr]);
 
   const { toast } = useToast();
 
   const backListEmployees = () => {
-    // window.location.href = "/employees";
+    onClose?.();
   };
 
   const { trigger: createUser } = useCreateUser({
     onSuccess: (res: any) => {
       if (res.data) {
         toast({
-          title: "Create new employee successful.",
+          title: "Create new user successful.",
         });
         backListEmployees();
       }
@@ -98,28 +85,13 @@ export default function UserForm(props: UserFormProps) {
     },
   });
 
-  const { trigger: deleteEmployee } = useDeleteEmployee({
-    onSuccess: (res: any) => {
-      if (res.data) {
-        backListEmployees();
-      }
-    },
-  });
-
-  const handleDeleteEmployee = () => {
-    setOpenConfirmDelete(false);
-    if (formData?.id) {
-      deleteEmployee({ id: formData.id.toString() });
-    }
-  };
-
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: formData ?? {
+    defaultValues: {
       name: "",
       userId: "",
       parentId: "",
-      level: "Client",
+      level: "",
     },
   });
 
@@ -134,14 +106,24 @@ export default function UserForm(props: UserFormProps) {
     }
   };
 
+  useEffect(() => {
+    form.setValue("parentId", parentData?.userId || "");
+    form.setValue("level", level);
+  }, [parentData, level]);
+
   return (
-    <Sheet>
-      <SheetTrigger asChild>
+    <Sheet open={open}>
+      {/* <SheetTrigger asChild>
         <Button>Add New User</Button>
-      </SheetTrigger>
-      <SheetContent className="sm:max-w-[540px]">
+      </SheetTrigger> */}
+      <SheetContent
+        onClose={() => {
+          onClose?.();
+        }}
+        className="sm:max-w-[540px]"
+      >
         <SheetHeader className="mb-4">
-          <SheetTitle>Create New User</SheetTitle>
+          <SheetTitle>Create MIB/IB</SheetTitle>
           {/* <SheetDescription>
                     Make changes to your profile here. Click save when you're
                     done.
@@ -152,6 +134,27 @@ export default function UserForm(props: UserFormProps) {
             className="space-y-4 pb-20 md:pb-0"
             onSubmit={handleSubmit(onSubmit)}
           >
+            <FormField
+              control={control}
+              name="parentId"
+              render={({ field }) => (
+                <FormItem className="md:flex items-start flex-1 gap-x-4">
+                  <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
+                    Upline UID
+                  </FormLabel>
+                  <FormControl className="flex-1">
+                    <div>
+                      <Input
+                        readOnly
+                        className="w-full"
+                        placeholder="Input Upline UID"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
             <FormField
               control={control}
               name="userId"
@@ -190,7 +193,7 @@ export default function UserForm(props: UserFormProps) {
                 </FormItem>
               )}
             />
-
+            {/* 
             <FormField
               control={control}
               name="parentId"
@@ -201,7 +204,6 @@ export default function UserForm(props: UserFormProps) {
                   </FormLabel>
                   <FormControl className="flex-1">
                     <div>
-                      {/* <Input placeholder="Select Upline User" {...field} /> */}
                       <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
                           <Button
@@ -261,7 +263,7 @@ export default function UserForm(props: UserFormProps) {
                   </FormControl>
                 </FormItem>
               )}
-            />
+            /> */}
 
             <FormField
               control={control}
@@ -272,14 +274,12 @@ export default function UserForm(props: UserFormProps) {
                     Level
                   </FormLabel>
                   <FormControl className="flex-1">
-                    <div>
-                      <BaseSelect
-                        placeholder="Select Level"
-                        options={listLevel}
-                        {...field}
-                      />
-                      <FormMessage />
-                    </div>
+                    <Input
+                      readOnly
+                      className="w-full"
+                      placeholder="Input level"
+                      {...field}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -293,23 +293,9 @@ export default function UserForm(props: UserFormProps) {
                 >
                   Save
                 </Button>
-                {/* <SheetFooter>
-                  <SheetClose asChild>
-                    <Button type="submit">Save changes</Button>
-                  </SheetClose>
-                </SheetFooter> */}
               </div>
             </div>
           </form>
-          <ConfirmDialog
-            open={openConfirmDelete}
-            onOk={() => handleDeleteEmployee()}
-            onCancel={() => setOpenConfirmDelete(false)}
-            title={"Are you sure to delete this employee?"}
-            description={
-              "This action cannot be undone. This employee will be permanently removed from your system."
-            }
-          />
         </Form>
       </SheetContent>
     </Sheet>
