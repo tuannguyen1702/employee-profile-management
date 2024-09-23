@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/sheet";
 import { TreeNode } from "@/lib/utils";
 import { useCreateUserRelated } from "@/hooks/useCreateUserRelated";
+import { userRelatedStore } from "@/stores/userRelatedStore";
 
 // Define the schema for the form
 const formSchema = z.object({
@@ -46,6 +47,8 @@ type ClientFormProps = {
 
 export default function ClientForm(props: ClientFormProps) {
   const { formData, parentData, open = false, onClose } = props;
+
+  const addMoreUserRelated = userRelatedStore((state) => state.addMoreUserRelated);
 
   const levelArr = Object.keys(levels);
 
@@ -69,6 +72,7 @@ export default function ClientForm(props: ClientFormProps) {
         toast({
           title: "Create new user successful.",
         });
+        addMoreUserRelated([res.data])
         backListEmployees();
       }
     },

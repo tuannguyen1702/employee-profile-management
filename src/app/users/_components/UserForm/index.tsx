@@ -30,6 +30,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { TreeNode } from "@/lib/utils";
+import { userStore } from "@/stores/userStore";
 
 // Define the schema for the form
 const formSchema = z.object({
@@ -48,6 +49,7 @@ type UserFormProps = {
 
 export default function UserForm(props: UserFormProps) {
   const { formData, parentData, open = false, onClose } = props;
+  const addMoreUser = userStore((state) => state.addMoreUser);
 
   const levelArr = Object.keys(levels);
 
@@ -66,6 +68,7 @@ export default function UserForm(props: UserFormProps) {
   const { trigger: createUser } = useCreateUser({
     onSuccess: (res: any) => {
       if (res.data) {
+        addMoreUser([res.data]);
         toast({
           title: "Create new user successful.",
         });

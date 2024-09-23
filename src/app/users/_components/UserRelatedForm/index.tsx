@@ -22,6 +22,7 @@ import {
   useCreateUserRelated,
   useCreateUserRelatedMultiple,
 } from "@/hooks/useCreateUserRelated";
+import { userRelatedStore } from "@/stores/userRelatedStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
@@ -47,6 +48,8 @@ export function UserRelatedForm(props: UserRelatedFormProps) {
   const { open, onClose, userDataList } = props;
   const [isOpen, setIsOpen] = useState(open);
 
+  const addMoreUserRelated = userRelatedStore((state) => state.addMoreUserRelated);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -67,11 +70,15 @@ export function UserRelatedForm(props: UserRelatedFormProps) {
   });
 
   const { trigger: createUser } = useCreateUserRelatedMultiple({
-    onSuccess: (res: any) => {
+    onSuccess: (res: any[]) => {
       if (res) {
         toast({
           title: "Create new user successful.",
         });
+
+        const newData = res.map(item => item.data) 
+
+        addMoreUserRelated(newData)
 
         onClose?.()
       }

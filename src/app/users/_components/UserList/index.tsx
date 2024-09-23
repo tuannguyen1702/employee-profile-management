@@ -16,11 +16,17 @@ import UserTreeCommission from "./UserTreeCommission";
 import UserTree from "./UserTree";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { UserRelatedForm } from "../UserRelatedForm";
+import { userStore } from "@/stores/userStore";
+import { userRelatedStore } from "@/stores/userRelatedStore";
 
 export default function UserList() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const name = searchParams.get("name");
+
+  const users = userStore((state) => state.users);
+  const userRelated = userRelatedStore((state) => state.userRelated);
+  const setLoading = userStore((state) => state.setLoading);
+
   const [dataReport, setDataReport] = useState<any>(null);
   const [userInvalid, setUserInvalid] = useState<string[] | null>(null);
   const [fileName, setFileName] = useState<string>("");
@@ -28,7 +34,6 @@ export default function UserList() {
 
   const [page, _] = useState<number>(1);
   const [textSearch, setTextSearch] = useState<string | null>(name);
-  const [users, setUsers] = useState<User[]>([]);
   const [openUserRelatedForm, setOpenUserRelatedForm] = useState<boolean>(false);
   const [searchResult, setSearchResult] = useState<User[] | undefined>(
     undefined
@@ -36,13 +41,13 @@ export default function UserList() {
 
   const query: Record<string, string> = {};
 
-  const { data, isValidating } = useGetUsers({
+  const { error, isValidating } = useGetUsers({
     ...query,
     _limit: `${ITEM_PER_PAGE}`,
     _page: `${page}`,
   });
 
-  const { data: userRelated } = useGetUserRelated();
+  const { error: userRelatedError } = useGetUserRelated();
 
   const userList = useMemo(() => {
     let newUserList = users;
@@ -63,7 +68,7 @@ export default function UserList() {
 
   const userRelatedObj = useMemo(() => {
     const userRelatedData: Record<string, string> = {};
-    userRelated?.data?.map((item) => {
+    userRelated.map((item) => {
       userRelatedData[item.userId] = item.parentId;
     });
 
@@ -151,15 +156,15 @@ export default function UserList() {
     setDataReport(null);
   };
 
-  useEffect(() => {
-    if (data?.data) {
-      const newData = data.data?.map((item) => ({
-        ...item,
-        nameForSearch: removeAccents(item.name).toLowerCase(),
-      }));
-      setUsers(newData);
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data?.data) {
+  //     const newData = data.data?.map((item) => ({
+  //       ...item,
+  //       nameForSearch: removeAccents(item.name).toLowerCase(),
+  //     }));
+  //     setUsers(newData);
+  //   }
+  // }, [data]);
 
   useEffect(() => {
     if (userInvalid?.length) {
