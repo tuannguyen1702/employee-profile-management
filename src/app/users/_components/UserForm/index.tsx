@@ -101,7 +101,6 @@ export default function UserForm(props: UserFormProps) {
   const { control, handleSubmit } = form;
 
   const onSubmit = (data: User) => {
-    console.log(data);
     if (formData?.id) {
       // updateEmployee({ id: formData.id.toString(), body: data });
     } else {

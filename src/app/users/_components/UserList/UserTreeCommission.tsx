@@ -53,10 +53,10 @@ export default function UserTreeCommission(props: UserTreeCommissionProps) {
       return ((node.volumeDirect || node.volumeIndirect) && type === "daily") ||
         (type === "monthly" && monthlyData?.commission) ||
         node.level === "Master" ? (
-        <div key={node.id} className="ml-4">
+        <div key={node.id}  data-report-type={`${type}-${node.level}`} className="ml-4 group data-[report-type=monthly]:ml-0">
           <div
             data-type={node.level}
-            className="flex data-[type=Master]:hidden data-[type=Master]:text-white data-[type=MIB]:bg-blue-400 data-[type=IB1]:bg-blue-300 data-[type=IB2]:bg-blue-200 data-[type=IB3]:bg-blue-100 data-[type=IB4]:bg-blue-50 bg-slate-200 my-0.5 py-1 px-2 rounded-sm"
+            className="flex data-[type=Master]:bg-blue-500 data-[type=Master]:text-white data-[type=MIB]:bg-blue-400 data-[type=IB1]:bg-blue-300 data-[type=IB2]:bg-blue-200 data-[type=IB3]:bg-blue-100 data-[type=IB4]:bg-blue-50 bg-slate-200 my-0.5 py-1 px-2 rounded-sm"
           >
             <div className="flex-1">{node.name}</div>
             <div className="w-[100px] px-3 text-right">{node.userId}</div>
@@ -103,7 +103,7 @@ export default function UserTreeCommission(props: UserTreeCommissionProps) {
                   {monthlyData?.vol}
                 </div>
                 <div className="w-[190px] px-3 text-right">
-                  {monthlyData?.commission}
+                  {monthlyData?.commission || '--'}
                 </div>
               </>
             )}
@@ -178,7 +178,7 @@ export default function UserTreeCommission(props: UserTreeCommissionProps) {
             </>
           )}
         </div>
-        <div className="-ml-8">{renderTree(userList)}</div>
+        <div className="-ml-4">{renderTree(userList)}</div>
       </div>
     </div>
   );
