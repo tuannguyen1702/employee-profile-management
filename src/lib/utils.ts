@@ -15,7 +15,16 @@ export interface TreeNode {
   volume: number;
   volumeDirect: number;
   volumeIndirect: number;
+  tolCommission?: number;
   children?: TreeNode[];
+}
+
+export interface ClientReport {
+  userId: string;
+  name: string;
+  vol: number;
+  deposit: number;
+  withdrawal: number; 
 }
 
 export const buildTree = (items: TreeNode[], noCommission = true): TreeNode[] => {

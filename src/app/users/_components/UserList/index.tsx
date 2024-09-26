@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useGetUsers } from "@/hooks/useGetUsers";
-import { buildTree, removeAccents, TreeNode } from "@/lib/utils";
+import { buildTree, ClientReport, removeAccents, TreeNode } from "@/lib/utils";
 import { useGetUserRelated } from "@/hooks/useGetUserRelated";
 import UserTreeCommission from "./UserTreeCommission";
 import UserTree from "./UserTree";
@@ -25,16 +25,17 @@ export default function UserList() {
 
   const users = userStore((state) => state.users);
   const userRelated = userRelatedStore((state) => state.userRelated);
-  const setLoading = userStore((state) => state.setLoading);
 
   const [dataReport, setDataReport] = useState<any>(null);
+  const [dataClient, setDataClient] = useState<ClientReport[]>([]);
   const [userInvalid, setUserInvalid] = useState<string[] | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<any>(null);
 
   const [page, _] = useState<number>(1);
   const [textSearch, setTextSearch] = useState<string | null>(name);
-  const [openUserRelatedForm, setOpenUserRelatedForm] = useState<boolean>(false);
+  const [openUserRelatedForm, setOpenUserRelatedForm] =
+    useState<boolean>(false);
   const [searchResult, setSearchResult] = useState<User[] | undefined>(
     undefined
   );
@@ -96,6 +97,7 @@ export default function UserList() {
       // Convert the sheet to JSON
       const jsonData: any = XLSX.utils.sheet_to_json(worksheet);
       const newData: Record<string, number> = {};
+      const clientData: ClientReport[] = [];
       const invalidUsers: string[] = [];
       let totalVol = 0;
       jsonData?.map((item: any) => {
@@ -109,6 +111,7 @@ export default function UserList() {
                 100
               : vol;
             newData[userRelatedObj[item.UserId]] = newVol;
+            clientData.push({userId: userRelatedObj[item.UserId], vol: newVol, name: item.Name, deposit: parseFloat(item.Deposit), withdrawal: parseFloat(item.Withdrawal)});
           } else {
             invalidUsers.push(item.UserId);
           }
@@ -121,6 +124,7 @@ export default function UserList() {
       } else {
         setDataReport(newData);
         setFileName(file.name);
+        setDataClient(clientData);
       }
     };
 
@@ -180,7 +184,7 @@ export default function UserList() {
         <Title>List User MIB/IB</Title>
         <div className="flex gap-x-4 items-center mb-4 py-2">
           <div className="flex-1">
-            <div className="flex gap-x-2 items-center max-w-[700px]">
+            <div className="flex gap-x-2 items-center max-w-[500px]">
               {/* <label className="hidden md:inline-block w-[120px]">
                 Input Name/UID
               </label> */}
@@ -210,12 +214,6 @@ export default function UserList() {
             </div>
           </div>
           <div className="flex space-x-2 items-center">
-            {/* <Button
-              onClick={importReportFile}
-              className="bg-green-600 hover:bg-green-500"
-            >
-              Import Report File
-            </Button> */}
             <div>{fileName}</div>
             {fileName && (
               <Button
@@ -232,9 +230,9 @@ export default function UserList() {
                 className="opacity-0 absolute h-full w-full cursor-pointer"
                 type="file"
                 accept=".xlsx, .xls"
-                onChange={handleFileUpload}
+                onChange={(e) => handleFileUpload(e)}
               />
-              Choose Report File
+              Choose Daily Report
             </Button>
 
             {/* <UserForm userData={data?.data} /> */}
@@ -245,7 +243,7 @@ export default function UserList() {
             List user is empty
           </div>
         ) : dataReport ? (
-          <UserTreeCommission userList={userList} />
+          <UserTreeCommission clientList={dataClient} userList={userList} />
         ) : (
           <UserTree userSearchResult={searchResult} userList={userList} />
         )}
@@ -260,7 +258,13 @@ export default function UserList() {
           }
         /> */}
       </div>
-      <UserRelatedForm userDataList={userInvalid} open={openUserRelatedForm} onClose={() => {setOpenUserRelatedForm(false)}}/>
+      <UserRelatedForm
+        userDataList={userInvalid}
+        open={openUserRelatedForm}
+        onClose={() => {
+          setOpenUserRelatedForm(false);
+        }}
+      />
     </Suspense>
   );
 }
