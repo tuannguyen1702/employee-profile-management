@@ -15,9 +15,9 @@ export default function Employees() {
 
   console.log(`userAdmin`, userAdmin)
 
-  if (status === "loading") {
-    return <p>Loading...</p>;
-  }
+  // if (status === "loading") {
+  //   return <p>Loading...</p>;
+  // }
   
   // if (!session || (session && !userAdmin?.includes(session?.user?.email))) {
   //   router.push('/login')
