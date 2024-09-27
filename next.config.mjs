@@ -2,6 +2,7 @@
 const nextConfig = {
     reactStrictMode: false,
     output: 'standalone',
+    middleware: ["/users", "/api"],
     eslint: {
       ignoreDuringBuilds: true,
     },

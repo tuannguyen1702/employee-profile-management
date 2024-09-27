@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import { Toaster } from "@/components/ui/toaster";
 
+import { SessionProvider } from "next-auth/react";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -18,14 +20,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={inter.className + " root"}>
-        <main className="relative flex min-h-screen flex-col items-center justify-between">
-          <div className="backdrop-blur-[50px] bg-white/50 absolute top-0 left-0 bottom-0 right-0 z-0"></div>
-          <Header />
-          <div className="flex-1 z-10 container py-6 mt-[54px] md:mt-[64px]">{children}</div>
-        </main>
-        <Toaster />
-      </body>
+      <SessionProvider>
+        <body className={inter.className + " root"}>
+          <main className="relative flex min-h-screen flex-col items-center justify-between">
+            <div className="backdrop-blur-[50px] bg-white/50 absolute top-0 left-0 bottom-0 right-0 z-0"></div>
+            <Header />
+            <div className="flex-1 z-10 container py-6 mt-[54px] md:mt-[64px]">
+              {children}
+            </div>
+          </main>
+          <Toaster />
+        </body>
+      </SessionProvider>
     </html>
   );
 }
