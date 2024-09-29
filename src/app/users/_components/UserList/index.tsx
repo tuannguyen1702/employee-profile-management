@@ -137,11 +137,12 @@ export default function UserList() {
     }
 
     deleteUpload();
-
+    
+    const newTextSearch = textSearch.toLowerCase();
     const userSearchResult = users.filter(
       (item) =>
-        item.nameForSearch?.includes(textSearch) ||
-        item.userId.includes(textSearch)
+        item.nameForSearch?.includes(newTextSearch) ||
+        item.userId.includes(newTextSearch)
     );
 
     setSearchResult(userSearchResult);

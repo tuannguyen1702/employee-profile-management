@@ -15,7 +15,7 @@ interface UserStore {
 export const userStore = create<UserStore>((set) => ({
   users: [],
   isLoading: false,
-  setUsers: (users) => set({ users: users.map((item) => ({...item, nameForSearch: removeAccents(item.name)})) }),
+  setUsers: (users) => set({ users: users.map((item) => ({...item, nameForSearch: removeAccents(item.name).toLowerCase()})) }),
   setLoading: (loading) => set({ isLoading: loading }),
   addMoreUser: (users) =>
     set((state) => ({

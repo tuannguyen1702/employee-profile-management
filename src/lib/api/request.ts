@@ -1,6 +1,6 @@
 import { environments } from "@/config";
 
-type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 interface RequestOptions {
   headers?: HeadersInit;
@@ -10,7 +10,7 @@ interface RequestOptions {
 
 const buildQueryString = (params: Record<string, string>): string => {
   const query = new URLSearchParams(params);
-  return query.toString() ? `?${query.toString()}` : '';
+  return query.toString() ? `?${query.toString()}` : "";
 };
 
 const request = async (
@@ -20,13 +20,14 @@ const request = async (
 ): Promise<any> => {
   const { headers, queryParams, body } = options;
 
-  const queryString = queryParams ? buildQueryString(queryParams) : '';
+  const queryString = queryParams ? buildQueryString(queryParams) : "";
   const fullUrl = `${environments.apiURL}${url}${queryString}`;
 
   const config: RequestInit = {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json",
       ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -39,19 +40,25 @@ const request = async (
     }
     return await response.json();
   } catch (error) {
-    console.error('Request error:', error);
+    console.error("Request error:", error);
     throw error;
   }
 };
 
 export const get = (url: string, options?: RequestOptions) =>
-  request(url, 'GET', options);
+  request(url, "GET", options);
 
-export const post = (url: string, body: Record<string, any>, options?: RequestOptions) =>
-  request(url, 'POST', { ...options, body });
+export const post = (
+  url: string,
+  body: Record<string, any>,
+  options?: RequestOptions
+) => request(url, "POST", { ...options, body });
 
-export const put = (url: string, body: Record<string, any>, options?: RequestOptions) =>
-  request(url, 'PUT', { ...options, body });
+export const put = (
+  url: string,
+  body: Record<string, any>,
+  options?: RequestOptions
+) => request(url, "PUT", { ...options, body });
 
 export const del = (url: string, options?: RequestOptions) =>
-  request(url, 'DELETE', options);
+  request(url, "DELETE", options);

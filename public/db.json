@@ -545,6 +545,13 @@
       "name": "Trần Ngọc Tín",
       "level": "IB1",
       "parentId": "212672"
+    },
+    {
+      "name": "Phan Kiều Trang",
+      "userId": "215846",
+      "level": "MIB",
+      "parentId": "212411",
+      "id": 78
     }
   ],
   "userRelated": [
@@ -1802,6 +1809,11 @@
       "userId": "215716",
       "parentId": "213801",
       "id": 252
+    },
+    {
+      "userId": "215846",
+      "parentId": "212411",
+      "id": 253
     }
   ],
   "reports": [{}]

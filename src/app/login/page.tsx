@@ -1,7 +1,8 @@
 import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { getSession } from "next-auth/react";
 
-export default function SignIn() {
+export default async function SignIn(req: any, res: any ) {
   return (
     <div className="grid justify-center pt-10">
       <form

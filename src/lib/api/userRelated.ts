@@ -2,7 +2,7 @@
 import { UserRelated } from "@/interfaces/api";
 import { get, post } from "./request";
 
-const url = '/userRelated'
+const url = '/user-related'
 
 export async function getUserRelated(): Promise<{
     data: UserRelated[];
