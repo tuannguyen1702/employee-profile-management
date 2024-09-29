@@ -49,6 +49,7 @@ export default function ClientForm(props: ClientFormProps) {
   const { formData, parentData, open = false, onClose } = props;
 
   const addMoreUserRelated = userRelatedStore((state) => state.addMoreUserRelated);
+  const [isSaving, setIsSaving] = useState(false);
 
   const levelArr = Object.keys(levels);
 
@@ -68,6 +69,7 @@ export default function ClientForm(props: ClientFormProps) {
 
   const { trigger: createUser } = useCreateUserRelated({
     onSuccess: (res: any) => {
+      setIsSaving(false);
       if (res.data) {
         toast({
           title: "Create new user successful.",
@@ -76,6 +78,13 @@ export default function ClientForm(props: ClientFormProps) {
         backListEmployees();
       }
     },
+    onError: () => {
+      setIsSaving(false);
+      toast({
+        title: "Client already exists.",
+        variant: "destructive"
+      });
+    }
   });
 
   const { trigger: updateEmployee } = useUpdateEmployee({
@@ -115,6 +124,7 @@ export default function ClientForm(props: ClientFormProps) {
   const { control, handleSubmit } = form;
 
   const onSubmit = (data: UserRelated) => {
+    setIsSaving(true);
     if (formData?.id) {
       // updateEmployee({ id: formData.id.toString(), body: data });
     } else {
@@ -190,6 +200,7 @@ export default function ClientForm(props: ClientFormProps) {
             <div>
               <div className="flex gap-x-2 justify-end">
                 <Button
+                  disabled={isSaving}
                   className="md:min-w-[180px] md:w-auto bg-green-600 hover:bg-green-500"
                   type="submit"
                 >

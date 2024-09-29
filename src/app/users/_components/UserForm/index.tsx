@@ -50,6 +50,7 @@ type UserFormProps = {
 export default function UserForm(props: UserFormProps) {
   const { formData, parentData, open = false, onClose } = props;
   const addMoreUser = userStore((state) => state.addMoreUser);
+  const [isSaving, setIsSaving] = useState(false);
 
   const levelArr = Object.keys(levels);
 
@@ -67,6 +68,7 @@ export default function UserForm(props: UserFormProps) {
 
   const { trigger: createUser } = useCreateUser({
     onSuccess: (res: any) => {
+      setIsSaving(false);
       if (res.data) {
         addMoreUser([res.data]);
         toast({
@@ -74,6 +76,13 @@ export default function UserForm(props: UserFormProps) {
         });
         backListEmployees();
       }
+    },
+    onError: () => {
+      setIsSaving(false);
+      toast({
+        title: "User already exists.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -101,6 +110,7 @@ export default function UserForm(props: UserFormProps) {
   const { control, handleSubmit } = form;
 
   const onSubmit = (data: User) => {
+    setIsSaving(true);
     if (formData?.id) {
       // updateEmployee({ id: formData.id.toString(), body: data });
     } else {
@@ -290,6 +300,7 @@ export default function UserForm(props: UserFormProps) {
             <div>
               <div className="flex gap-x-2 justify-end">
                 <Button
+                  disabled={isSaving}
                   className="md:min-w-[180px] md:w-auto bg-green-600 hover:bg-green-500"
                   type="submit"
                 >

@@ -47,6 +47,7 @@ type UserRelatedFormProps = {
 export function UserRelatedForm(props: UserRelatedFormProps) {
   const { open, onClose, userDataList } = props;
   const [isOpen, setIsOpen] = useState(open);
+  const [isSaving, setIsSaving] = useState(false);
 
   const addMoreUserRelated = userRelatedStore((state) => state.addMoreUserRelated);
 
@@ -71,6 +72,7 @@ export function UserRelatedForm(props: UserRelatedFormProps) {
 
   const { trigger: createUser } = useCreateUserRelatedMultiple({
     onSuccess: (res: any[]) => {
+      setIsSaving(false);
       if (res) {
         toast({
           title: "Create new user successful.",
@@ -83,9 +85,17 @@ export function UserRelatedForm(props: UserRelatedFormProps) {
         onClose?.()
       }
     },
+    onError: () => {
+      setIsSaving(false);
+      toast({
+        title: "Client already exists.",
+        variant: "destructive"
+      });
+    }
   });
 
   const onSubmit = (data: any) => {
+    setIsSaving(true);
     createUser(data.users);
   };
 
@@ -168,7 +178,7 @@ export function UserRelatedForm(props: UserRelatedFormProps) {
               ))}
             </div>
             <div className="flex justify-end">
-              <Button className="bg-blue-600 hover:bg-blue-500" type="submit">
+              <Button disabled={isSaving} className="bg-blue-600 hover:bg-blue-500" type="submit">
                 Save
               </Button>
             </div>
