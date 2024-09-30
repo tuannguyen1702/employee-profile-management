@@ -54,7 +54,7 @@ export const buildTree = (items: TreeNode[], noCommission = true): TreeNode[] =>
             total = total + (item.volume || 0) + (item.volumeIndirect || 0);
           })
   
-          parent.volumeIndirect = Math.round((total + (node?.volume || 0)) * 100) / 100;
+          parent.volumeIndirect = Math.round((total + (node?.volume || 0) + (node?.volumeIndirect || 0)) * 100) / 100;
         }
 
         parent.children!.push(node as TreeNode);

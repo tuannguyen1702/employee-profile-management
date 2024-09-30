@@ -6,7 +6,6 @@ export async function GET() {
   try {
     // Fetch dữ liệu từ API bên ngoài
     const response = await fetch(`${environments.apiEndpointURL}/users`);
-    console.log(`data`, response.ok);
     // Kiểm tra nếu response không thành công
     if (!response.ok) {
       return NextResponse.json(
@@ -17,9 +16,6 @@ export async function GET() {
 
     // Chuyển đổi dữ liệu sang JSON
     const data = await response.json();
-
-    console.log(`data`, data);
-
     // Trả về dữ liệu
     return NextResponse.json(data);
   } catch (error) {
@@ -44,10 +40,6 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(body),
     });
-
-
-
-    console.log(`response`, response);
 
     if (!response.ok) {
       return NextResponse.json(

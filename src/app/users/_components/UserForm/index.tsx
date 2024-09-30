@@ -114,7 +114,8 @@ export default function UserForm(props: UserFormProps) {
     if (formData?.id) {
       // updateEmployee({ id: formData.id.toString(), body: data });
     } else {
-      createUser(data);
+      const leaf = levelArr.findIndex((item) => item === parentData?.level);
+      createUser({...data, leaf: leaf + 1});
     }
   };
 
