@@ -27,7 +27,7 @@ export default function UserList() {
   const userRelated = userRelatedStore((state) => state.userRelated);
 
   const [dataReport, setDataReport] = useState<any>(null);
-  const [dataClient, setDataClient] = useState<ClientReport[]>([]);
+  const [dataClient, setDataClient] = useState<Record<string, ClientReport> | null>(null);
   const [userInvalid, setUserInvalid] = useState<string[] | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<any>(null);
@@ -97,7 +97,7 @@ export default function UserList() {
       // Convert the sheet to JSON
       const jsonData: any = XLSX.utils.sheet_to_json(worksheet);
       const newData: Record<string, number> = {};
-      const clientData: ClientReport[] = [];
+      const clientData: Record<string, ClientReport> = {};
       const invalidUsers: string[] = [];
       let totalVol = 0;
       jsonData?.map((item: any) => {
@@ -105,13 +105,35 @@ export default function UserList() {
 
         if (vol > 0) {
           totalVol = Math.round((totalVol + vol) * 100) / 100;
+
+          // If user is valid
           if (userRelatedObj[item.UserId]) {
-            const newVol = newData[userRelatedObj[item.UserId]]
+            const newVol = newData[userRelatedObj[item.UserId]] //Parent object is valid
               ? Math.round((vol + newData[userRelatedObj[item.UserId]]) * 100) /
                 100
               : vol;
             newData[userRelatedObj[item.UserId]] = newVol;
-            clientData.push({userId: userRelatedObj[item.UserId], vol: newVol, name: item.Name, deposit: parseFloat(item.Deposit), withdrawal: parseFloat(item.Withdrawal)});
+
+            const newClient = clientData[item.UserId];
+            const deposit = parseFloat(item.Deposit);
+            const withdrawal = parseFloat(item.Withdrawal);
+            if (newClient) {
+              clientData[item.UserId] = {
+                userId: item.UserId,
+                vol: newClient.vol + vol,
+                name: item.Name,
+                deposit: newClient.deposit + deposit,
+                withdrawal: newClient.withdrawal + withdrawal,
+              };
+            } else {
+              clientData[item.UserId] = {
+                userId: item.UserId,
+                vol:  vol,
+                name: item.Name,
+                deposit: deposit,
+                withdrawal: withdrawal,
+              };
+            }
           } else {
             invalidUsers.push(item.UserId);
           }
@@ -137,7 +159,7 @@ export default function UserList() {
     }
 
     deleteUpload();
-    
+
     const newTextSearch = textSearch.toLowerCase();
     const userSearchResult = users.filter(
       (item) =>
@@ -244,7 +266,7 @@ export default function UserList() {
             List user is empty
           </div>
         ) : dataReport ? (
-          <UserTreeCommission clientList={dataClient} userList={userList} />
+          <UserTreeCommission clientObj={dataClient} userList={userList} />
         ) : (
           <UserTree userSearchResult={searchResult} userList={userList} />
         )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { clientCommission, levels } from "@/const";
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { ClientReport, TreeNode } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -14,19 +14,28 @@ import {
 
 interface UserTreeCommissionProps {
   userList: TreeNode[];
-  clientList: ClientReport[];
+  clientObj: Record<string, ClientReport> | null;
 }
 
 export default function UserTreeCommission(props: UserTreeCommissionProps) {
-  const { userList, clientList = [] } = props;
+  const { userList, clientObj } = props;
   const [type, setType] = useState("daily");
   const [tabValue, setTabValue] = useState("mib");
 
+  const clientList = useMemo(() => {
+    if (!clientObj) return [];
+
+    return Object.values(clientObj).map((item: ClientReport) => item);
+  }, [clientObj]);
+
   const monthlyCommissionCal = (node: TreeNode, level: string) => {
     const vol =
-      node.volumeIndirect || node.volumeDirect
+      node.volumeIndirect || node.volumeDirect || clientObj?.[node.userId]
         ? Math.round(
-            ((node.volumeDirect ?? 0) + (node.volumeIndirect ?? 0)) * 100
+            ((node.volumeDirect ?? 0) +
+              (node.volumeIndirect ?? 0) +
+              (clientObj?.[node.userId]?.vol ?? 0)) *
+              100
           ) / 100
         : 0;
 
@@ -53,7 +62,11 @@ export default function UserTreeCommission(props: UserTreeCommissionProps) {
       return ((node.volumeDirect || node.volumeIndirect) && type === "daily") ||
         (type === "monthly" && monthlyData?.commission) ||
         node.level === "Master" ? (
-        <div key={node.id}  data-report-type={`${type}-${node.level}`} className="ml-4 group data-[report-type=monthly]:ml-0">
+        <div
+          key={node.id}
+          data-report-type={`${type}-${node.level}`}
+          className="ml-4 group data-[report-type=monthly]:ml-0"
+        >
           <div
             data-type={node.level}
             className="flex data-[type=Master]:bg-blue-500 data-[type=Master]:text-white data-[type=MIB]:bg-blue-400 data-[type=IB1]:bg-blue-300 data-[type=IB2]:bg-blue-200 data-[type=IB3]:bg-blue-100 data-[type=IB4]:bg-blue-50 bg-slate-200 my-0.5 py-1 px-2 rounded-sm"
@@ -103,7 +116,7 @@ export default function UserTreeCommission(props: UserTreeCommissionProps) {
                   {monthlyData?.vol}
                 </div>
                 <div className="w-[190px] px-3 text-right">
-                  {monthlyData?.commission || '--'}
+                  {monthlyData?.commission || "--"}
                 </div>
               </>
             )}
