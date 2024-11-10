@@ -3,7 +3,7 @@ import {
   UserQueryParams,
   PositionResource,
 } from "@/interfaces/api";
-import { del, get, post, put } from "./request";
+import { del, get, patch, post, put } from "./request";
 
 const url = "/users";
 
@@ -24,7 +24,7 @@ export async function deleteUser(id: string): Promise<{
 export async function updateUser(id: string, body: User): Promise<{
   data: User;
 }> {
-  const res = await put(`${url}/${id}`, body);
+  const res = await patch(`${url}/${id}`, body);
   return { data: res };
 }
 

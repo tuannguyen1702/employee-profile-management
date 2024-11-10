@@ -115,3 +115,16 @@ export const levels: Record<
     },
   },
 };
+
+
+const commissionTypes = {
+  GOODS: 'GOODS',
+  CURRENCY: 'CURRENCY',
+  CRYPTO: 'CRYPTO',
+  STOCK: 'STOCK'
+}
+
+export const configKeys = {
+  COMMISSION_SETTING: 'COMMISSION_SETTING',
+  COMMISSION_TYPE: 'COMMISSION_TYPE'
+}

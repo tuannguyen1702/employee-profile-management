@@ -22,7 +22,7 @@ import { useUpdateEmployee } from "@/hooks/useUpdateEmployee";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { useDeleteEmployee } from "@/hooks/useDeleteEmployee";
-import { levels } from "@/const";
+import { configKeys, levels } from "@/const";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +31,16 @@ import {
 } from "@/components/ui/sheet";
 import { TreeNode } from "@/lib/utils";
 import { userStore } from "@/stores/userStore";
+import { commissionConfigStore } from "@/stores/commissionConfig";
+import { useGetConfigByKey } from "@/hooks/useGetConfigByKey";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useUpdateUser } from "@/hooks/useUpdateUser";
 
 // Define the schema for the form
 const formSchema = z.object({
@@ -38,24 +48,39 @@ const formSchema = z.object({
   userId: z.string().min(6, { message: "User ID is wrong format." }),
   level: z.string(),
   parentId: z.string(),
+  commissionSettingId: z.string().optional(),
 });
 
 type UserFormProps = {
   open?: boolean;
   formData?: TreeNode;
-  parentData?: TreeNode;
+  parentData?: {
+    user?: TreeNode | User;
+    isEdit: boolean;
+  };
   onClose?: () => void;
 };
 
 export default function UserForm(props: UserFormProps) {
   const { formData, parentData, open = false, onClose } = props;
+  const { isEdit } = parentData ?? {};
   const addMoreUser = userStore((state) => state.addMoreUser);
+  const updateUserStore = userStore((state) => state.updateUser);
+  
   const [isSaving, setIsSaving] = useState(false);
+
+  const commissionConfigData = commissionConfigStore(
+    (state) => state.commissionConfig
+  );
+
+  const { error: userRelatedError } = useGetConfigByKey(
+    configKeys.COMMISSION_SETTING
+  );
 
   const levelArr = Object.keys(levels);
 
   const level = useMemo(() => {
-    const idx = levelArr.findIndex((item) => item === parentData?.level);
+    const idx = levelArr.findIndex((item) => item === parentData?.user?.level);
 
     return levelArr[idx + 1];
   }, [parentData, levelArr]);
@@ -63,6 +88,7 @@ export default function UserForm(props: UserFormProps) {
   const { toast } = useToast();
 
   const backListEmployees = () => {
+    form.reset();
     onClose?.();
   };
 
@@ -86,14 +112,23 @@ export default function UserForm(props: UserFormProps) {
     },
   });
 
-  const { trigger: updateEmployee } = useUpdateEmployee({
+  const { trigger: updateUser } = useUpdateUser({
     onSuccess: (res: any) => {
+      setIsSaving(false);
       if (res.data) {
+        updateUserStore(res.data);
         toast({
-          title: "Update employee successful.",
+          title: "Update successful.",
         });
         backListEmployees();
       }
+    },
+    onError: () => {
+      setIsSaving(false);
+      toast({
+        title: "Update is error.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -104,6 +139,7 @@ export default function UserForm(props: UserFormProps) {
       userId: "",
       parentId: "",
       level: "",
+      commissionSettingId: "",
     },
   });
 
@@ -111,18 +147,31 @@ export default function UserForm(props: UserFormProps) {
 
   const onSubmit = (data: User) => {
     setIsSaving(true);
-    if (formData?.id) {
+    if (isEdit) {
+      updateUser({id: parentData?.user?.id?.toString() ?? '', user: data})
       // updateEmployee({ id: formData.id.toString(), body: data });
     } else {
-      const leaf = levelArr.findIndex((item) => item === parentData?.level);
-      createUser({...data, leaf: leaf + 1});
+      const leaf = levelArr.findIndex(
+        (item) => item === parentData?.user?.level
+      );
+      createUser({ ...data, leaf: leaf + 1 });
     }
   };
 
   useEffect(() => {
-    form.setValue("parentId", parentData?.userId || "");
-    form.setValue("level", level);
-  }, [parentData, level]);
+    if (open) {
+      if(!isEdit) {
+        form.setValue("parentId", parentData?.user?.userId || "");
+        form.setValue("level", level);
+      } else {
+        form.setValue("userId", parentData?.user?.userId || "");
+        form.setValue("level", parentData?.user?.level || "");
+        form.setValue("name", parentData?.user?.name || "");
+        form.setValue("commissionSettingId", parentData?.user?.commissionSettingId || "");
+      }
+      
+    }
+  }, [parentData, level, open]);
 
   return (
     <Sheet open={open}>
@@ -131,12 +180,13 @@ export default function UserForm(props: UserFormProps) {
       </SheetTrigger> */}
       <SheetContent
         onClose={() => {
+          form.reset();
           onClose?.();
         }}
         className="sm:max-w-[540px]"
       >
         <SheetHeader className="mb-4">
-          <SheetTitle>Create MIB/IB</SheetTitle>
+          <SheetTitle>Create {parentData ? "MIB/IB" : "Master"}</SheetTitle>
           {/* <SheetDescription>
                     Make changes to your profile here. Click save when you're
                     done.
@@ -147,38 +197,41 @@ export default function UserForm(props: UserFormProps) {
             className="space-y-4 pb-20 md:pb-0"
             onSubmit={handleSubmit(onSubmit)}
           >
-            <FormField
-              control={control}
-              name="parentId"
-              render={({ field }) => (
-                <FormItem className="md:flex items-start flex-1 gap-x-4">
-                  <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
-                    Upline UID
-                  </FormLabel>
-                  <FormControl className="flex-1">
-                    <div>
-                      <Input
-                        readOnly
-                        className="w-full"
-                        placeholder="Input Upline UID"
-                        {...field}
-                      />
-                    </div>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            {parentData?.user?.parentId  && (
+              <FormField
+                control={control}
+                name="parentId"
+                render={({ field }) => (
+                  <FormItem className="md:flex items-start flex-1 gap-x-4">
+                    <FormLabel className="md:h-10  md:w-[140px] flex mt-2 items-center">
+                      Upline UID
+                    </FormLabel>
+                    <FormControl className="flex-1">
+                      <div>
+                        <Input
+                          readOnly
+                          className="w-full"
+                          placeholder="Input Upline UID"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={control}
               name="userId"
               render={({ field }) => (
                 <FormItem className="md:flex items-start flex-1 gap-x-4">
-                  <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
+                  <FormLabel className="md:h-10  md:w-[140px] flex mt-2 items-center">
                     User ID
                   </FormLabel>
                   <FormControl className="flex-1">
                     <div>
                       <Input
+                        readOnly={isEdit}
                         className="w-full"
                         placeholder="Input User ID"
                         {...field}
@@ -194,96 +247,25 @@ export default function UserForm(props: UserFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem className="md:flex items-start flex-1 gap-x-4">
-                  <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
+                  <FormLabel className="md:h-10  md:w-[140px] flex mt-2 items-center">
                     Name
                   </FormLabel>
                   <FormControl className="flex-1">
                     <div>
-                      <Input placeholder="Input Name" {...field} />
+                      <Input readOnly={isEdit} placeholder="Input Name" {...field} />
                       <FormMessage />
                     </div>
                   </FormControl>
                 </FormItem>
               )}
             />
-            {/* 
-            <FormField
-              control={control}
-              name="parentId"
-              render={({ field }) => (
-                <FormItem className="md:flex items-start flex-1 gap-x-4">
-                  <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
-                    Upline User
-                  </FormLabel>
-                  <FormControl className="flex-1">
-                    <div>
-                      <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={open}
-                            className="w-full justify-between"
-                          >
-                            {value
-                              ? userList?.find(
-                                  (user) => user.value === value
-                                )?.label
-                              : "Select User"}
-                            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="p-0 w-[355px]">
-                          <Command>
-                            <CommandInput
-                              placeholder="Search User"
-                              className="h-9"
-                            />
-                            <CommandList>
-                              <CommandEmpty>No user found.</CommandEmpty>
-                              <CommandGroup>
-                                {userList?.map((user) => (
-                                  <CommandItem
-                                    key={user.value}
-                                    value={user.value}
-                                    onSelect={(currentValue) => {
-                                      setValue(
-                                        currentValue === value
-                                          ? ""
-                                          : currentValue
-                                      );
-                                      setOpen(false);
-                                    }}
-                                  >
-                                    {user.label}
-                                    <CheckIcon
-                                      className={cn(
-                                        "ml-auto h-4 w-4",
-                                        value === user.value
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </div>
-                  </FormControl>
-                </FormItem>
-              )}
-            /> */}
 
             <FormField
               control={control}
               name="level"
               render={({ field }) => (
                 <FormItem className="md:flex items-start flex-1 gap-x-4">
-                  <FormLabel className="md:h-10  md:w-[120px] flex mt-2 items-center">
+                  <FormLabel className="md:h-10  md:w-[140px] flex mt-2 items-center">
                     Level
                   </FormLabel>
                   <FormControl className="flex-1">
@@ -297,6 +279,42 @@ export default function UserForm(props: UserFormProps) {
                 </FormItem>
               )}
             />
+
+            {!parentData?.user?.parentId  && (
+              <FormField
+                control={control}
+                name="commissionSettingId"
+                render={({ field }) => (
+                  <FormItem className="md:flex items-start flex-1 gap-x-4">
+                    <FormLabel className="md:h-10  md:w-[140px] flex mt-2 items-center">
+                      Commission Setting
+                    </FormLabel>
+                    <FormControl className="flex-1">
+                      <div>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select Commission Setting" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(commissionConfigData?.value as any[]).map(
+                              (item: any) => (
+                                <SelectItem value={`${item.key}`}>
+                                  {`${item.name}`}
+                                </SelectItem>
+                              )
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div>
               <div className="flex gap-x-2 justify-end">

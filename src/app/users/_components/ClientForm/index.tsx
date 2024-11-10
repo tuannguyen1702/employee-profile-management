@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";;
+import { Button } from "@/components/ui/button";
 import { User, UserRelated } from "@/interfaces/api";
 import { useCreateUser } from "@/hooks/useCreateUser";
 import { useToast } from "@/components/ui/use-toast";
@@ -34,27 +34,32 @@ import { userRelatedStore } from "@/stores/userRelatedStore";
 
 // Define the schema for the form
 const formSchema = z.object({
-  userId: z.string().min(6, {message: 'User ID is wrong format.'}),
+  userId: z.string().min(6, { message: "User ID is wrong format." }),
   parentId: z.string(),
 });
 
 type ClientFormProps = {
   open?: boolean;
   formData?: TreeNode;
-  parentData?: TreeNode;
+  parentData?: {
+    user?: TreeNode | User;
+    isEdit: boolean;
+  };
   onClose?: () => void;
 };
 
 export default function ClientForm(props: ClientFormProps) {
   const { formData, parentData, open = false, onClose } = props;
 
-  const addMoreUserRelated = userRelatedStore((state) => state.addMoreUserRelated);
+  const addMoreUserRelated = userRelatedStore(
+    (state) => state.addMoreUserRelated
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   const levelArr = Object.keys(levels);
 
   const level = useMemo(() => {
-    const idx = levelArr.findIndex((item) => item === parentData?.level);
+    const idx = levelArr.findIndex((item) => item === parentData?.user?.level);
 
     return levelArr[idx + 1];
   }, [parentData, levelArr]);
@@ -74,7 +79,7 @@ export default function ClientForm(props: ClientFormProps) {
         toast({
           title: "Create new user successful.",
         });
-        addMoreUserRelated([res.data])
+        addMoreUserRelated([res.data]);
         backListEmployees();
       }
     },
@@ -82,9 +87,9 @@ export default function ClientForm(props: ClientFormProps) {
       setIsSaving(false);
       toast({
         title: "Client already exists.",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const { trigger: updateEmployee } = useUpdateEmployee({
@@ -117,7 +122,7 @@ export default function ClientForm(props: ClientFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       userId: "",
-      parentId: ""
+      parentId: "",
     },
   });
 
@@ -133,10 +138,8 @@ export default function ClientForm(props: ClientFormProps) {
   };
 
   useEffect(() => {
-
-    form.setValue('parentId', parentData?.userId || '');
-
-  }, [parentData])
+    form.setValue("parentId", parentData?.user?.userId || "");
+  }, [parentData]);
 
   return (
     <Sheet open={open}>

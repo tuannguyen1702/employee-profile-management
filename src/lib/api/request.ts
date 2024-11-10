@@ -1,6 +1,6 @@
 import { environments } from "@/config";
 
-type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
+type RequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 interface RequestOptions {
   headers?: HeadersInit;
@@ -59,6 +59,12 @@ export const put = (
   body: Record<string, any>,
   options?: RequestOptions
 ) => request(url, "PUT", { ...options, body });
+
+export const patch = (
+  url: string,
+  body: Record<string, any>,
+  options?: RequestOptions
+) => request(url, "PATCH", { ...options, body });
 
 export const del = (url: string, options?: RequestOptions) =>
   request(url, "DELETE", options);

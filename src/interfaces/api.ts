@@ -49,6 +49,7 @@ export type User = {
   parentId: string | null;
   nameForSearch?: string;
   leaf?: number;
+  commissionSettingId?: string;
 };
 
 export type UserQueryParams = BaseQueryParams & {
@@ -59,4 +60,9 @@ export type UserRelated = {
   id?: number;
   userId: string;
   parentId: string;
+};
+
+export type ConfigData = {
+  key: string;
+  value: unknown;
 };

@@ -18,6 +18,8 @@ import { Cross2Icon } from "@radix-ui/react-icons";
 import { UserRelatedForm } from "../UserRelatedForm";
 import { userStore } from "@/stores/userStore";
 import { userRelatedStore } from "@/stores/userRelatedStore";
+import UserForm from "../UserForm";
+import ClientForm from "../ClientForm";
 
 export default function UserList() {
   const searchParams = useSearchParams();
@@ -26,8 +28,14 @@ export default function UserList() {
   const users = userStore((state) => state.users);
   const userRelated = userRelatedStore((state) => state.userRelated);
 
-  const [dataReport, setDataReport] = useState<any>(null);
-  const [dataClient, setDataClient] = useState<Record<string, ClientReport> | null>(null);
+  const [dataReport, setDataReport] = useState<Record<
+    string,
+    { vol: number; volSymbol: Record<string, number> }
+  > | null>(null);
+  const [dataClient, setDataClient] = useState<Record<
+    string,
+    ClientReport
+  > | null>(null);
   const [userInvalid, setUserInvalid] = useState<string[] | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<any>(null);
@@ -42,6 +50,22 @@ export default function UserList() {
 
   const query: Record<string, string> = {};
 
+  const [openUserForm, setOpenUserForm] = useState(false);
+  const [openClientForm, setOpenClientForm] = useState(false);
+  const [userSelected, setUserSelected] = useState<
+    { user?: TreeNode | User; isEdit: boolean } | undefined
+  >(undefined);
+
+  const handleOpenUserForm = (user?: TreeNode | User, isEdit = false) => {
+    setOpenUserForm(true);
+    setUserSelected({ user, isEdit });
+  };
+
+  const handleOpenClientForm = (user: TreeNode | User) => {
+    setOpenClientForm(true);
+    setUserSelected({ user, isEdit: false });
+  };
+
   const { error, isValidating } = useGetUsers({
     ...query,
     _limit: `${ITEM_PER_PAGE}`,
@@ -55,10 +79,12 @@ export default function UserList() {
     if (dataReport) {
       newUserList = users.map((item) => ({
         ...item,
-        volume: dataReport[item.userId] ?? 0,
-        volumeDirect: dataReport[item.userId] ?? 0,
+        volume: dataReport[item.userId]?.vol ?? 0,
+        volumeDirect: dataReport[item.userId]?.vol ?? 0,
+        volSymbol: dataReport[item.userId]?.volSymbol,
       }));
     }
+
     const treeData = buildTree(
       newUserList as unknown as TreeNode[],
       dataReport ? false : true
@@ -76,7 +102,7 @@ export default function UserList() {
     return userRelatedData;
   }, [userRelated]);
 
-  const handleFileUpload = (event: any) => {
+  const handleFileUpload = (event: any, isDaily = true) => {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -96,46 +122,79 @@ export default function UserList() {
 
       // Convert the sheet to JSON
       const jsonData: any = XLSX.utils.sheet_to_json(worksheet);
-      const newData: Record<string, number> = {};
+      const newData: Record<
+        string,
+        { vol: number; volSymbol: Record<string, number> }
+      > = {};
       const clientData: Record<string, ClientReport> = {};
       const invalidUsers: string[] = [];
       let totalVol = 0;
       jsonData?.map((item: any) => {
         const vol = parseFloat(item.Volume);
 
+        const userId = item.UserId ?? item.UID;
+
         if (vol > 0) {
           totalVol = Math.round((totalVol + vol) * 100) / 100;
 
           // If user is valid
-          if (userRelatedObj[item.UserId]) {
-            const newVol = newData[userRelatedObj[item.UserId]] //Parent object is valid
-              ? Math.round((vol + newData[userRelatedObj[item.UserId]]) * 100) /
+          if (userRelatedObj[userId]) {
+            const newVol = newData[userRelatedObj[userId]] //Parent object is valid
+              ? Math.round((vol + newData[userRelatedObj[userId]].vol) * 100) /
                 100
               : vol;
-            newData[userRelatedObj[item.UserId]] = newVol;
 
-            const newClient = clientData[item.UserId];
+
+              if(userRelatedObj[userId] === '213824') {
+                console.log(`ddd`, userRelatedObj[userId], userId, vol);
+              }
+
+            const symbol = item.Symbol as string;
+
+            let volSymbol = {
+              ...(newData[userRelatedObj[userId]]?.volSymbol ?? {}),
+            };
+
+            if (volSymbol[symbol]) {
+              volSymbol = {
+                ...volSymbol,
+                [symbol]: Math.round((volSymbol[symbol] + vol) * 100) / 100,
+              };
+            } else {
+              volSymbol = {
+                ...volSymbol,
+                [symbol]: vol,
+              };
+            }
+
+            newData[userRelatedObj[userId]] = {
+              vol: newVol,
+              volSymbol,
+            };
+
+            const newClient = clientData[userId];
             const deposit = parseFloat(item.Deposit);
             const withdrawal = parseFloat(item.Withdrawal);
+
             if (newClient) {
-              clientData[item.UserId] = {
+              clientData[userId] = {
                 userId: item.UserId,
-                vol: newClient.vol + vol,
+                vol: Math.round((newClient.vol + vol) * 100) / 100,
                 name: item.Name,
                 deposit: newClient.deposit + deposit,
                 withdrawal: newClient.withdrawal + withdrawal,
               };
             } else {
-              clientData[item.UserId] = {
-                userId: item.UserId,
-                vol:  vol,
+              clientData[userId] = {
+                userId: userId,
+                vol: vol,
                 name: item.Name,
                 deposit: deposit,
                 withdrawal: withdrawal,
               };
             }
           } else {
-            invalidUsers.push(item.UserId);
+            invalidUsers.push(userId);
           }
         }
       });
@@ -211,6 +270,9 @@ export default function UserList() {
               {/* <label className="hidden md:inline-block w-[120px]">
                 Input Name/UID
               </label> */}
+              <Button onClick={() => handleOpenUserForm()} variant="secondary">
+                Add Master
+              </Button>
               <div className="flex-1">
                 <Input
                   placeholder="Input Name/UID"
@@ -247,7 +309,7 @@ export default function UserList() {
                 <Cross2Icon className="h-4 w-4" />
               </Button>
             )}
-            <Button className="bg-blue-600 hover:bg-blue-500 relative">
+            {/* <Button className="bg-blue-600 hover:bg-blue-500 relative">
               <input
                 ref={fileInputRef}
                 className="opacity-0 absolute h-full w-full cursor-pointer"
@@ -255,7 +317,18 @@ export default function UserList() {
                 accept=".xlsx, .xls"
                 onChange={(e) => handleFileUpload(e)}
               />
-              Choose Daily Report
+              Daily Report
+            </Button> */}
+
+            <Button className="bg-blue-600 hover:bg-blue-500 relative">
+              <input
+                ref={fileInputRef}
+                className="opacity-0 absolute h-full w-full cursor-pointer"
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={(e) => handleFileUpload(e, false)}
+              />
+              Import Report
             </Button>
 
             {/* <UserForm userData={data?.data} /> */}
@@ -268,7 +341,12 @@ export default function UserList() {
         ) : dataReport ? (
           <UserTreeCommission clientObj={dataClient} userList={userList} />
         ) : (
-          <UserTree userSearchResult={searchResult} userList={userList} />
+          <UserTree
+            openClientForm={handleOpenClientForm}
+            openUserForm={handleOpenUserForm}
+            userSearchResult={searchResult}
+            userList={userList}
+          />
         )}
         {isValidating && <p className="py-3">Loading...</p>}
         {/* <ConfirmDialog
@@ -287,6 +365,16 @@ export default function UserList() {
         onClose={() => {
           setOpenUserRelatedForm(false);
         }}
+      />
+      <UserForm
+        parentData={userSelected}
+        open={openUserForm}
+        onClose={() => setOpenUserForm(false)}
+      />
+      <ClientForm
+        parentData={userSelected}
+        open={openClientForm}
+        onClose={() => setOpenClientForm(false)}
       />
     </Suspense>
   );
