@@ -134,7 +134,7 @@ export function UserRelatedForm(props: UserRelatedFormProps) {
         </DialogHeader>
         <Form {...form}>
           <form
-            className="space-y-4 pb-20 md:pb-0"
+            className="space-y-4 pb-20 md:pb-0 -mx-6 px-6 overflow-auto max-h-[600px] pt-2"
             onSubmit={handleSubmit(onSubmit)}
           >
             <div className="group">
