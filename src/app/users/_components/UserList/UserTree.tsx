@@ -185,8 +185,16 @@ export default function UserTree(props: UserTreeProps) {
               onClick={() => handleOpenClientForm(user)}
               variant="secondary"
               size="xs"
+              className="mr-2"
             >
               Add Client
+            </Button>
+            <Button
+              onClick={() => handleOpenClientFormUpdate(user)}
+              variant="secondary"
+              size="xs"
+            >
+              Update Client
             </Button>
           </div>
         </div>
