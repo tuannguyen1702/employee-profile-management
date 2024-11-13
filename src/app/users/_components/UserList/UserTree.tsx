@@ -3,8 +3,6 @@
 import { Suspense, useState } from "react";
 import { TreeNode } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import UserForm from "../UserForm";
-import ClientForm from "../ClientForm";
 import { User } from "@/interfaces/api";
 import {
   Accordion,
@@ -19,10 +17,17 @@ interface UserTreeProps {
   userSearchResult?: User[];
   openUserForm: (user: TreeNode | User, isEdit: boolean) => void;
   openClientForm: (user: TreeNode | User) => void;
+  openClientFormUpdate: (user: TreeNode | User) => void;
 }
 
 export default function UserTree(props: UserTreeProps) {
-  const { userList, userSearchResult, openUserForm, openClientForm } = props;
+  const {
+    userList,
+    userSearchResult,
+    openUserForm,
+    openClientForm,
+    openClientFormUpdate,
+  } = props;
 
   const [activeValue, setActiveValue] = useState<string | undefined>();
 
@@ -32,6 +37,10 @@ export default function UserTree(props: UserTreeProps) {
 
   const handleOpenClientForm = (user: TreeNode | User) => {
     openClientForm(user);
+  };
+
+  const handleOpenClientFormUpdate = (user: TreeNode | User) => {
+    openClientFormUpdate(user);
   };
 
   const renderTree = (nodes: TreeNode[]) => {
@@ -49,7 +58,7 @@ export default function UserTree(props: UserTreeProps) {
                 <div className="w-[120px] px-3 text-right">{node.userId}</div>
                 <div className="w-[120px] px-3 text-right">{node.level}</div>
 
-                <div className="w-[250px] flex pl-3 text-right justify-end items-center">
+                <div className="w-[350px] flex pl-3 text-right justify-end items-center">
                   <Button
                     onClick={() => {
                       handleOpenUserForm(node, true);
@@ -74,8 +83,16 @@ export default function UserTree(props: UserTreeProps) {
                     onClick={() => handleOpenClientForm(node)}
                     variant="secondary"
                     size="xs"
+                    className="mr-2"
                   >
                     Add Client
+                  </Button>
+                  <Button
+                    onClick={() => handleOpenClientFormUpdate(node)}
+                    variant="secondary"
+                    size="xs"
+                  >
+                    Update Client
                   </Button>
                 </div>
               </div>
@@ -99,7 +116,7 @@ export default function UserTree(props: UserTreeProps) {
             <div className="w-[120px] px-3 text-right">{node.userId}</div>
             <div className="w-[120px] px-3 text-right">{node.level}</div>
 
-            <div className="w-[250px] flex pl-3 text-right justify-end items-center">
+            <div className="w-[350px] flex pl-3 text-right justify-end items-center">
               <Button
                 onClick={() => {
                   handleOpenUserForm(node);
@@ -114,8 +131,16 @@ export default function UserTree(props: UserTreeProps) {
                 onClick={() => handleOpenClientForm(node)}
                 variant="secondary"
                 size="xs"
+                className="mr-2"
               >
                 Add Client
+              </Button>
+              <Button
+                onClick={() => handleOpenClientFormUpdate(node)}
+                variant="secondary"
+                size="xs"
+              >
+                Update Client
               </Button>
             </div>
           </div>
@@ -145,7 +170,7 @@ export default function UserTree(props: UserTreeProps) {
           <div className="w-[120px] px-3 text-right">{user.userId}</div>
           <div className="w-[120px] px-3 text-right">{user.level}</div>
 
-          <div className="w-[250px] flex pl-3 text-right justify-end items-center">
+          <div className="w-[350px] flex pl-3 text-right justify-end items-center">
             <Button
               onClick={() => {
                 handleOpenUserForm(user);
@@ -177,7 +202,7 @@ export default function UserTree(props: UserTreeProps) {
             <div className="flex-1">Name</div>
             <div className="w-[120px] px-3 text-right">UID</div>
             <div className="w-[120px] px-3 text-right">Level</div>
-            <div className="w-[250px] px-3 text-right">Actions</div>
+            <div className="w-[350px] px-3 text-right">Actions</div>
           </div>
           {userSearchResult ? (
             renderUserSearchResult(userSearchResult)

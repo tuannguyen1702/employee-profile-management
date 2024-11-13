@@ -100,8 +100,6 @@ export const buildTree = (
     }
   });
 
-  console.log(`roots`, roots);
-
   return roots;
 };
 

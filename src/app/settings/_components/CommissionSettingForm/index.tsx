@@ -235,7 +235,6 @@ export default function CommissionSettingForm(
   const { control } = form;
 
   const onSubmit = (data: any) => {
-    console.log(`data`, data);
 
     const postData: any = {
       key: configKeys.COMMISSION_SETTING,
@@ -376,7 +375,6 @@ export default function CommissionSettingForm(
                                           className="w-full"
                                           {...field}
                                           onChange={(e) => {
-                                            console.log(e);
                                             field.onChange(
                                               parseInt(e.target.value)
                                             );

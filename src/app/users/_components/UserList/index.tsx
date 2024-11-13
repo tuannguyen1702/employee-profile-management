@@ -20,6 +20,7 @@ import { userStore } from "@/stores/userStore";
 import { userRelatedStore } from "@/stores/userRelatedStore";
 import UserForm from "../UserForm";
 import ClientForm from "../ClientForm";
+import ClientFormUpdate from "../ClientFormUpdate";
 
 export default function UserList() {
   const searchParams = useSearchParams();
@@ -52,6 +53,7 @@ export default function UserList() {
 
   const [openUserForm, setOpenUserForm] = useState(false);
   const [openClientForm, setOpenClientForm] = useState(false);
+  const [openClientFormUpdate, setOpenClientFormUpdate] = useState(false);
   const [userSelected, setUserSelected] = useState<
     { user?: TreeNode | User; isEdit: boolean } | undefined
   >(undefined);
@@ -63,6 +65,10 @@ export default function UserList() {
 
   const handleOpenClientForm = (user: TreeNode | User) => {
     setOpenClientForm(true);
+    setUserSelected({ user, isEdit: false });
+  };
+  const handleOpenClientFormUpdate = (user: TreeNode | User) => {
+    setOpenClientFormUpdate(true);
     setUserSelected({ user, isEdit: false });
   };
 
@@ -143,12 +149,7 @@ export default function UserList() {
               ? Math.round((vol + newData[userRelatedObj[userId]].vol) * 100) /
                 100
               : vol;
-
-
-              if(userRelatedObj[userId] === '213824') {
-                console.log(`ddd`, userRelatedObj[userId], userId, vol);
-              }
-
+              
             const symbol = item.Symbol as string;
 
             let volSymbol = {
@@ -344,6 +345,7 @@ export default function UserList() {
           <UserTree
             openClientForm={handleOpenClientForm}
             openUserForm={handleOpenUserForm}
+            openClientFormUpdate={handleOpenClientFormUpdate}
             userSearchResult={searchResult}
             userList={userList}
           />
@@ -375,6 +377,11 @@ export default function UserList() {
         parentData={userSelected}
         open={openClientForm}
         onClose={() => setOpenClientForm(false)}
+      />
+      <ClientFormUpdate
+        parentData={userSelected}
+        open={openClientFormUpdate}
+        onClose={() => setOpenClientFormUpdate(false)}
       />
     </Suspense>
   );
