@@ -100,6 +100,7 @@ export default function ClientFormUpdate(props: ClientFormUpdateProps) {
     if(user) {
       updateClient({...user, ...data});
     } else {
+      setIsSaving(false);
       toast({
         title: "Client isn't exists.",
         variant: "destructive",
