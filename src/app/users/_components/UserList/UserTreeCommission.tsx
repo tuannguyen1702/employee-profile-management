@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { commissionConfigStore } from "@/stores/commissionConfig";
 
 interface UserTreeCommissionProps {
   userList: TreeNode[];
@@ -27,6 +28,49 @@ export default function UserTreeCommission(props: UserTreeCommissionProps) {
 
     return Object.values(clientObj).map((item: ClientReport) => item);
   }, [clientObj]);
+
+  const commissionTypeData = commissionConfigStore(
+    (state) => state.commissionType
+  );
+
+  const commissionConfigData = commissionConfigStore(
+    (state) => state.commissionConfig
+  );
+
+  const symbolList = useMemo(() => {
+    const commissionTypeValue = commissionTypeData?.value as Record<
+      string,
+      string
+    >;
+    if (!commissionTypeValue) return null;
+
+    const symbolData: Record<string, string> = {};
+
+    Object.keys(commissionTypeValue).map((key) => {
+      commissionTypeValue[key].split(",").map((s) => {
+        symbolData[s.trim()] = key;
+      });
+    });
+
+    return symbolData;
+  }, [commissionTypeData]);
+
+  const levelData = useMemo(() => {
+    const commissionConfigValue = commissionConfigData?.value as {
+      key: string;
+      value: Record<string, object>;
+    }[];
+
+    let config = commissionConfigValue[0].value;
+    for (const item of commissionConfigValue) {
+      if (item.key === userList[0].commissionSettingId) {
+        config = item.value;
+        break;
+      }
+    }
+
+    return config;
+  }, [commissionConfigData, userList]);
 
   const monthlyCommissionCal = (node: TreeNode, level: string) => {
     const vol =
@@ -52,11 +96,65 @@ export default function UserTreeCommission(props: UserTreeCommissionProps) {
     return { vol: vol, commission: Math.round(ratio * vol * 100) / 100 };
   };
 
+  const dailyCommissionCal = (node: TreeNode, level: string) => {
+    const lv = node.level.trim().toUpperCase();
+    const volIndirectArr = Object.keys(node.volIndirectSymbol || {});
+    let totalInDirectCommission = 0;
+
+    if (volIndirectArr.length) {
+      volIndirectArr.map((item: string) => {
+        const type: string = symbolList?.[item] || "";
+
+        if (node.volIndirectSymbol?.[item]) {
+          totalInDirectCommission =
+            totalInDirectCommission +
+            node.volIndirectSymbol[item] *
+              (levelData[lv] as any).inDirectCommission[type];
+        }
+      });
+    } else {
+      totalInDirectCommission = levels[node.level].inDirectCommission * node.volumeIndirect;
+    }
+
+    totalInDirectCommission = Math.round(totalInDirectCommission * 100) / 100;
+
+    const volDirectArr = Object.keys(node.volSymbol || {});
+    let totalDirectCommission = 0;
+
+    if (volDirectArr.length) {
+      volDirectArr.map((item: string) => {
+        const type: string = symbolList?.[item] || "";
+
+        if (node.volSymbol?.[item]) {
+          totalDirectCommission =
+            totalDirectCommission +
+            node.volSymbol[item] *
+              (levelData[lv] as any).directCommission[type];
+        }
+      });
+    } else {
+      totalDirectCommission = levels[node.level].directCommission * node.volumeDirect;
+    }
+
+    totalDirectCommission = Math.round(totalDirectCommission * 100) / 100;
+
+
+    const totalCommission =
+      Math.round(((totalDirectCommission || 0) + (totalInDirectCommission || 0)) * 100) / 100;
+
+    return { totalDirectCommission, totalInDirectCommission, totalCommission };
+  };
+
   const renderTree = (nodes: TreeNode[]) => {
     return nodes.map((node) => {
       let monthlyData = null;
       if (type === "monthly") {
         monthlyData = monthlyCommissionCal(node, node.level);
+      }
+
+      let dailyData = null;
+      if ((node.volumeDirect || node.volumeIndirect) && type === "daily") {
+        dailyData = dailyCommissionCal(node, node.level);
       }
 
       return ((node.volumeDirect || node.volumeIndirect) && type === "daily") ||
@@ -83,31 +181,15 @@ export default function UserTreeCommission(props: UserTreeCommissionProps) {
                   {node.volumeIndirect || "--"}
                 </div>
                 <div className="w-[190px] px-3 text-right">
-                  {node.volumeDirect
-                    ? Math.round(
-                        levels[node.level].directCommission *
-                          node.volumeDirect *
-                          100
-                      ) / 100
-                    : "--"}
+                  {node.volumeDirect ? dailyData?.totalDirectCommission : "--"}
                 </div>
                 <div className="w-[190px] px-3 text-right">
                   {node.volumeIndirect
-                    ? Math.round(
-                        levels[node.level].inDirectCommission *
-                          node.volumeIndirect *
-                          100
-                      ) / 100
+                    ? dailyData?.totalInDirectCommission
                     : "--"}
                 </div>
                 <div className="w-[140px] px-3 text-right">
-                  {Math.round(
-                    (levels[node.level].inDirectCommission *
-                      (node.volumeIndirect || 0) +
-                      levels[node.level].directCommission *
-                        (node.volumeDirect || 0)) *
-                      100
-                  ) / 100}
+                  {dailyData?.totalCommission}
                 </div>
               </>
             ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import * as XLSX from "xlsx";
-import { ITEM_PER_PAGE } from "@/const";
+import { configKeys, ITEM_PER_PAGE } from "@/const";
 import { User } from "@/interfaces/api";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Title from "@/components/common/Typography/Title";
@@ -21,6 +21,7 @@ import { userRelatedStore } from "@/stores/userRelatedStore";
 import UserForm from "../UserForm";
 import ClientForm from "../ClientForm";
 import ClientFormUpdate from "../ClientFormUpdate";
+import { useGetConfigByKey } from "@/hooks/useGetConfigByKey";
 
 export default function UserList() {
   const searchParams = useSearchParams();
@@ -31,7 +32,7 @@ export default function UserList() {
 
   const [dataReport, setDataReport] = useState<Record<
     string,
-    { vol: number; volSymbol: Record<string, number> }
+    { vol: number; volSymbol: Record<string, number> | null }
   > | null>(null);
   const [dataClient, setDataClient] = useState<Record<
     string,
@@ -79,6 +80,9 @@ export default function UserList() {
   });
 
   const { error: userRelatedError } = useGetUserRelated();
+  const { error: commissionError } = useGetConfigByKey(
+    configKeys.COMMISSION_TYPE
+  );
 
   const userList = useMemo(() => {
     let newUserList = users;
@@ -130,7 +134,7 @@ export default function UserList() {
       const jsonData: any = XLSX.utils.sheet_to_json(worksheet);
       const newData: Record<
         string,
-        { vol: number; volSymbol: Record<string, number> }
+        { vol: number; volSymbol: Record<string, number> | null }
       > = {};
       const clientData: Record<string, ClientReport> = {};
       const invalidUsers: string[] = [];
@@ -149,7 +153,7 @@ export default function UserList() {
               ? Math.round((vol + newData[userRelatedObj[userId]].vol) * 100) /
                 100
               : vol;
-              
+
             const symbol = item.Symbol as string;
 
             let volSymbol = {
@@ -170,7 +174,7 @@ export default function UserList() {
 
             newData[userRelatedObj[userId]] = {
               vol: newVol,
-              volSymbol,
+              volSymbol: symbol ? volSymbol : null,
             };
 
             const newClient = clientData[userId];
@@ -195,7 +199,7 @@ export default function UserList() {
               };
             }
           } else {
-            invalidUsers.push(userId);
+            if (!invalidUsers.includes(userId)) invalidUsers.push(userId);
           }
         }
       });
