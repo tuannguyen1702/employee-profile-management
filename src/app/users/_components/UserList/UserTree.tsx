@@ -52,7 +52,7 @@ export default function UserTree(props: UserTreeProps) {
               data-type={node.level}
               className="flex w-full data-[type=Master]:bg-blue-500 data-[type=Master]:text-white data-[type=MIB]:bg-blue-400 data-[type=IB1]:bg-blue-300 data-[type=IB2]:bg-blue-200 data-[type=IB3]:bg-blue-100 data-[type=IB4]:bg-blue-50 bg-slate-200 my-0.5 py-1 px-2 rounded-sm"
             >
-              <AccordionTrigger></AccordionTrigger>
+              {/* <AccordionTrigger></AccordionTrigger> */}
               <div className="ml-2 flex-1 flex">
                 <div className="flex-1">{node.name}</div>
                 <div className="w-[120px] px-3 text-right">{node.userId}</div>

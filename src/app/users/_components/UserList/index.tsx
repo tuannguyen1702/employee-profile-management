@@ -22,6 +22,7 @@ import UserForm from "../UserForm";
 import ClientForm from "../ClientForm";
 import ClientFormUpdate from "../ClientFormUpdate";
 import { useGetConfigByKey } from "@/hooks/useGetConfigByKey";
+import Select from "@/components/common/Select";
 
 export default function UserList() {
   const searchParams = useSearchParams();
@@ -41,6 +42,7 @@ export default function UserList() {
   const [userInvalid, setUserInvalid] = useState<string[] | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<any>(null);
+  const [userSelectedIndex, setUserSelectedIndex] = useState("0");
 
   const [page, _] = useState<number>(1);
   const [textSearch, setTextSearch] = useState<string | null>(name);
@@ -84,7 +86,7 @@ export default function UserList() {
     configKeys.COMMISSION_TYPE
   );
 
-  const userList = useMemo(() => {
+  const userListOrigin = useMemo(() => {
     let newUserList = users;
     if (dataReport) {
       newUserList = users.map((item) => ({
@@ -102,6 +104,8 @@ export default function UserList() {
 
     return treeData;
   }, [users, dataReport]);
+
+  const userList = userListOrigin.length > 1 ? [userListOrigin[parseInt(userSelectedIndex)]] : userListOrigin
 
   const userRelatedObj = useMemo(() => {
     const userRelatedData: Record<string, string> = {};
@@ -279,14 +283,15 @@ export default function UserList() {
         <Title>List User MIB/IB</Title>
         <div className="flex gap-x-4 items-center mb-4 py-2">
           <div className="flex-1">
-            <div className="flex gap-x-2 items-center max-w-[500px]">
+            <div className="flex gap-x-2 items-center max-w-[700px]">
               {/* <label className="hidden md:inline-block w-[120px]">
                 Input Name/UID
               </label> */}
+              <Select value={userSelectedIndex} onChange={(v => setUserSelectedIndex(v))}  className="w-[180px]" options={ userListOrigin.map((item, idex) => ({ label: item.name, value:  `${idex}`})) } />
               <Button onClick={() => handleOpenUserForm()} variant="secondary">
                 Add Master
               </Button>
-              <div className="flex-1">
+              <div className="ml-3 flex-1">
                 <Input
                   placeholder="Input Name/UID"
                   value={textSearch || ""}
