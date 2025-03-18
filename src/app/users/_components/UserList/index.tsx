@@ -139,22 +139,30 @@ export default function UserList() {
       const clientData: Record<string, ClientReport> = {};
       const invalidUsers: string[] = [];
       let totalVol = 0;
+      // let testVol = 0;
       jsonData?.map((item: any) => {
-        const vol = parseFloat(item.Volume);
+        const vol = parseFloat(item.Volume ?? item.volume);
 
-        const userId = item.UserId ?? item.UID;
+        const userId = item.UserId ?? item.UID ?? item.login;
 
         if (vol > 0) {
           totalVol = Math.round((totalVol + vol) * 100) / 100;
 
           // If user is valid
           if (userRelatedObj[userId]) {
+
+            // if('213686' === userRelatedObj[userId]) {
+            //   testVol = testVol + parseFloat(item.Volume ?? item.volume)
+            //   console.log(parseFloat(item.Volume ?? item.volume), testVol)
+            // }
             const newVol = newData[userRelatedObj[userId]] //Parent object is valid
               ? Math.round((vol + newData[userRelatedObj[userId]].vol) * 100) /
                 100
               : vol;
 
-            const symbol = item.Symbol as string;
+            let symbol = (item.Symbol ?? item.symbol) as string;
+
+            symbol = symbol.replace(/.v/, '');
 
             let volSymbol = {
               ...(newData[userRelatedObj[userId]]?.volSymbol ?? {}),
