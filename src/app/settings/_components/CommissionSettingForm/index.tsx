@@ -371,13 +371,16 @@ export default function CommissionSettingForm(
                                       <div>
                                         <Input
                                           type="number"
-                                          inputMode="numeric"
+                                          inputMode="decimal"
                                           className="w-full"
+                                          step={0.1}
                                           {...field}
                                           onChange={(e) => {
-                                            field.onChange(
-                                              parseInt(e.target.value)
-                                            );
+                                            const newValue =  parseFloat(e.target.value);
+
+                                            if(newValue < 0) return;
+
+                                            field.onChange(newValue);
 
                                             form.setValue(
                                               "value",
