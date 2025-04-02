@@ -147,7 +147,7 @@ export default function UserList() {
       jsonData?.map((item: any) => {
         const vol = parseFloat(item.Volume ?? item.volume);
 
-        const userId = item.UserId ?? item.UID ?? item.login;
+        const userId = item.UserId ?? item.UID ?? item.userId;
 
         if (vol > 0) {
           totalVol = Math.round((totalVol + vol) * 100) / 100;

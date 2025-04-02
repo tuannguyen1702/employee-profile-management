@@ -66,3 +66,10 @@ export type ConfigData = {
   key: string;
   value: unknown;
 };
+
+
+export type UserSetting = {
+  timestamp: string;
+  token: string;
+  msg: string;
+};
