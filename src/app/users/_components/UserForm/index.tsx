@@ -45,7 +45,7 @@ import { useUpdateUser } from "@/hooks/useUpdateUser";
 // Define the schema for the form
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
-  userId: z.string().min(6, { message: "User ID is wrong format." }),
+  userId: z.string().min(4, { message: "User ID is wrong format." }),
   level: z.string(),
   parentId: z.string(),
   commissionSettingId: z.string().optional(),

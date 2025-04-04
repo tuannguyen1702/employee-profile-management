@@ -34,7 +34,7 @@ import { userRelatedStore } from "@/stores/userRelatedStore";
 
 // Define the schema for the form
 const formSchema = z.object({
-  userId: z.string().min(6, { message: "User ID is wrong format." }),
+  userId: z.string().min(4, { message: "User ID is wrong format." }),
   parentId: z.string(),
 });
 
